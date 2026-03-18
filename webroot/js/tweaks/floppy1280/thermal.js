@@ -5,6 +5,7 @@ let thermalSavedState = {};
 let thermalPendingState = {};
 let thermalAvailable = false;
 let thermalReferenceState = {};
+let thermalDefaultState = {};
 
 // Mode descriptions for display
 const THERMAL_MODE_NAMES = {
@@ -35,15 +36,15 @@ async function loadThermalState() {
         const { current, saved } = await window.loadTweakState('thermal');
 
         thermalCurrentState = current;
-        thermalSavedState = saved;
+        thermalDefaultState = { ...window.getDefaultTweakPreset('thermal') };
+        thermalSavedState = window.buildSparseStateAgainstDefaults(saved, thermalDefaultState);
 
         // Initialize pending state
-        const defThermal = window.getDefaultTweakPreset('thermal');
-        thermalPendingState = window.initPendingState(thermalCurrentState, thermalSavedState, defThermal);
+        thermalPendingState = window.initPendingState(thermalCurrentState, thermalSavedState, thermalDefaultState);
         if (!thermalPendingState.mode) thermalPendingState.mode = '1';
         if (thermalPendingState.custom_freq === undefined) thermalPendingState.custom_freq = '';
 
-        const { reference } = window.resolveTweakReference(thermalCurrentState, thermalSavedState, defThermal);
+        const { reference } = window.resolveTweakReference(thermalCurrentState, thermalSavedState, thermalDefaultState);
         thermalReferenceState = {
             mode: reference.mode || '1',
             custom_freq: reference.custom_freq || ''
@@ -100,11 +101,16 @@ function renderThermalCard() {
 
     // Update custom frequency input
     if (customFreqInput) {
-        const referenceFreq = thermalReferenceState.custom_freq || '';
-        customFreqInput.placeholder = referenceFreq;
-        customFreqInput.value = (thermalPendingState.custom_freq && thermalPendingState.custom_freq !== referenceFreq)
-            ? thermalPendingState.custom_freq
-            : '';
+        const { placeholder, value } = window.getTweakTextInputState(
+            'custom_freq',
+            thermalPendingState,
+            thermalSavedState,
+            thermalReferenceState,
+            thermalDefaultState,
+            thermalCurrentState
+        );
+        customFreqInput.placeholder = placeholder;
+        customFreqInput.value = value;
     }
 
     // Update mode description
@@ -150,18 +156,15 @@ function selectThermalMode(mode) {
 async function saveThermal() {
     const mode = thermalPendingState.mode;
     const customFreq = thermalPendingState.custom_freq || '';
-
-    await runThermalBackend('save', mode, customFreq);
+    const sparseState = window.buildSparseStateAgainstDefaults({ mode, custom_freq: customFreq }, thermalDefaultState);
+    await runThermalBackend('save', ...Object.entries(sparseState).map(([key, value]) => `${key}=${value}`));
 
     // Update saved state
-    thermalSavedState.mode = mode;
-    thermalSavedState.custom_freq = customFreq;
-    thermalReferenceState = {
-        mode: thermalSavedState.mode || '1',
-        custom_freq: thermalSavedState.custom_freq || ''
-    };
+    thermalSavedState = { ...sparseState };
+    thermalReferenceState = window.initPendingState(thermalCurrentState, thermalSavedState, thermalDefaultState);
+    thermalPendingState = { ...thermalReferenceState };
 
-    updateThermalPendingIndicator();
+    renderThermalCard();
     showToast(window.t ? window.t('toast.settingsSaved') : 'Settings saved');
 }
 
@@ -204,8 +207,16 @@ function initThermalTweak() {
     const customFreqInput = document.getElementById('thermal-custom_freq');
     if (customFreqInput) {
         customFreqInput.addEventListener('input', (e) => {
-            thermalPendingState.custom_freq = e.target.value;
-            updateThermalPendingIndicator();
+            if (e.target.value === '') {
+                thermalPendingState.custom_freq = window.getTweakDefaultValue(
+                    'custom_freq',
+                    thermalCurrentState,
+                    thermalDefaultState
+                );
+            } else {
+                thermalPendingState.custom_freq = e.target.value;
+            }
+            renderThermalCard();
         });
     }
 

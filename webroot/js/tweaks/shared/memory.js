@@ -5,8 +5,35 @@ let memorySavedState = {};
 let memoryPendingState = {};
 let memoryDirtyMode = 'ratio'; // 'ratio' or 'bytes'
 let memoryReferenceState = {};
+let memoryDefaultState = {};
 
 const runMemoryBackend = (...args) => window.runTweakBackend('memory', ...args);
+
+function buildMemoryEffectiveState() {
+    const state = {
+        swappiness: window.getTweakPendingValue('swappiness', memoryPendingState, memoryReferenceState, memoryDefaultState, memoryCurrentState),
+        dirty_ratio: window.getTweakPendingValue('dirty_ratio', memoryPendingState, memoryReferenceState, memoryDefaultState, memoryCurrentState),
+        dirty_bytes: window.getTweakPendingValue('dirty_bytes', memoryPendingState, memoryReferenceState, memoryDefaultState, memoryCurrentState),
+        dirty_background_ratio: window.getTweakPendingValue('dirty_background_ratio', memoryPendingState, memoryReferenceState, memoryDefaultState, memoryCurrentState),
+        dirty_background_bytes: window.getTweakPendingValue('dirty_background_bytes', memoryPendingState, memoryReferenceState, memoryDefaultState, memoryCurrentState),
+        dirty_writeback_centisecs: window.getTweakPendingValue('dirty_writeback_centisecs', memoryPendingState, memoryReferenceState, memoryDefaultState, memoryCurrentState),
+        dirty_expire_centisecs: window.getTweakPendingValue('dirty_expire_centisecs', memoryPendingState, memoryReferenceState, memoryDefaultState, memoryCurrentState),
+        stat_interval: window.getTweakPendingValue('stat_interval', memoryPendingState, memoryReferenceState, memoryDefaultState, memoryCurrentState),
+        vfs_cache_pressure: window.getTweakPendingValue('vfs_cache_pressure', memoryPendingState, memoryReferenceState, memoryDefaultState, memoryCurrentState),
+        watermark_scale_factor: window.getTweakPendingValue('watermark_scale_factor', memoryPendingState, memoryReferenceState, memoryDefaultState, memoryCurrentState)
+    };
+
+    // Keep ratio/bytes mutually exclusive in the persisted/applied state.
+    if (memoryDirtyMode === 'ratio') {
+        state.dirty_bytes = '0';
+        state.dirty_background_bytes = '0';
+    } else {
+        state.dirty_ratio = '0';
+        state.dirty_background_ratio = '0';
+    }
+
+    return state;
+}
 
 // Load Memory state
 async function loadMemoryState() {
@@ -14,14 +41,12 @@ async function loadMemoryState() {
         const { current, saved } = await window.loadTweakState('memory');
 
         memoryCurrentState = current;
-        memorySavedState = saved;
+        memoryDefaultState = { ...window.getDefaultTweakPreset('memory') };
+        memorySavedState = window.buildSparseStateAgainstDefaults(saved, memoryDefaultState);
 
-        // Initialize pending
-        const defMem = window.getDefaultTweakPreset('memory');
-        memoryPendingState = window.initPendingState(memoryCurrentState, memorySavedState, defMem);
-
-        const { reference } = window.resolveTweakReference(memoryCurrentState, memorySavedState, defMem);
-        memoryReferenceState = { ...reference };
+        // Keep saved/custom overrides separate from the boot-captured defaults.
+        memoryReferenceState = window.initPendingState(memoryCurrentState, memorySavedState, memoryDefaultState);
+        memoryPendingState = { ...memoryReferenceState };
 
         // Determine initial Dirty Mode
         // If bytes are non-zero, use bytes. Otherwise default to ratio.
@@ -46,9 +71,16 @@ function renderMemoryCard() {
     const swappinessInput = document.getElementById('mem-swappiness');
     const swappinessVal = document.getElementById('mem-val-swappiness');
     if (swappinessInput) {
-        const referenceVal = memoryReferenceState.swappiness || memoryCurrentState.swappiness || '';
-        swappinessInput.placeholder = referenceVal;
-        swappinessInput.value = memoryPendingState.swappiness !== referenceVal ? memoryPendingState.swappiness : '';
+        const { placeholder, value } = window.getTweakTextInputState(
+            'swappiness',
+            memoryPendingState,
+            memorySavedState,
+            memoryReferenceState,
+            memoryDefaultState,
+            memoryCurrentState
+        );
+        swappinessInput.placeholder = placeholder;
+        swappinessInput.value = value;
     }
     if (swappinessVal) swappinessVal.textContent = memoryCurrentState.swappiness || '--';
 
@@ -91,14 +123,16 @@ function updateMemInput(key) {
     const label = document.getElementById(`mem-val-${key}`);
 
     if (input) {
-        input.placeholder = memoryReferenceState[key] || memoryCurrentState[key] || '';
-        // Only show value if it differs from reference (saved or defaults)
-        const referenceVal = memoryReferenceState[key] || memoryCurrentState[key];
-        if (memoryPendingState[key] && memoryPendingState[key] !== referenceVal) {
-            input.value = memoryPendingState[key];
-        } else {
-            input.value = '';
-        }
+        const { placeholder, value } = window.getTweakTextInputState(
+            key,
+            memoryPendingState,
+            memorySavedState,
+            memoryReferenceState,
+            memoryDefaultState,
+            memoryCurrentState
+        );
+        input.placeholder = placeholder;
+        input.value = value;
     }
     if (label) label.textContent = memoryCurrentState[key] || '--';
 }
@@ -113,8 +147,8 @@ function updateMemoryPendingIndicator() {
     let hasPending = false;
     // Check against saved if exists, else current
     for (const key of paramKeys) {
-        const referenceVal = memoryReferenceState[key] || memoryCurrentState[key];
-        const pendingVal = memoryPendingState[key] || referenceVal;
+        const referenceVal = window.getTweakReferenceValue(key, memoryReferenceState, memoryDefaultState, memoryCurrentState);
+        const pendingVal = window.getTweakPendingValue(key, memoryPendingState, memoryReferenceState, memoryDefaultState, memoryCurrentState);
         if (pendingVal != referenceVal) {
             hasPending = true;
             break;
@@ -127,8 +161,7 @@ function updateMemoryPendingIndicator() {
 // Input Change Handlers
 function handleMemInput(key, value) {
     if (value === '' || value === undefined) {
-        // Revert to saved/current
-        memoryPendingState[key] = memoryReferenceState[key] || memoryCurrentState[key];
+        memoryPendingState[key] = window.getTweakDefaultValue(key, memoryCurrentState, memoryDefaultState);
     } else {
         memoryPendingState[key] = value;
     }
@@ -148,65 +181,25 @@ function setMemoryMode(mode) {
 }
 
 async function saveMemory() {
-    // Construct args from pending state
-    // We only save keys that are relevant.
-    // Ensure mutual exclusivity is enforced in the saved data
-    const args = [];
-    const keys = ['swappiness', 'dirty_writeback_centisecs', 'dirty_expire_centisecs',
-        'stat_interval', 'vfs_cache_pressure', 'watermark_scale_factor'];
-
-    keys.forEach(k => args.push(`${k}=${memoryPendingState[k] || memoryCurrentState[k]}`));
-
-    if (memoryDirtyMode === 'ratio') {
-        args.push(`dirty_ratio=${memoryPendingState.dirty_ratio || '0'}`);
-        args.push(`dirty_background_ratio=${memoryPendingState.dirty_background_ratio || '0'}`);
-        args.push(`dirty_bytes=0`);
-        args.push(`dirty_background_bytes=0`);
-    } else {
-        args.push(`dirty_bytes=${memoryPendingState.dirty_bytes || '0'}`);
-        args.push(`dirty_background_bytes=${memoryPendingState.dirty_background_bytes || '0'}`);
-        args.push(`dirty_ratio=0`);
-        args.push(`dirty_background_ratio=0`);
-    }
+    const effectiveState = buildMemoryEffectiveState();
+    const sparseState = window.buildSparseStateAgainstDefaults(effectiveState, memoryDefaultState);
+    const args = Object.entries(sparseState).map(([key, value]) => `${key}=${value}`);
 
     const result = await runMemoryBackend('save', ...args);
     if (result && result.includes('Saved')) {
         showToast('Memory settings saved');
-        memorySavedState = { ...memoryPendingState };
-        // Sync mutual exclusions to saved state
-        if (memoryDirtyMode === 'ratio') {
-            memorySavedState.dirty_bytes = '0';
-            memorySavedState.dirty_background_bytes = '0';
-        } else {
-            memorySavedState.dirty_ratio = '0';
-            memorySavedState.dirty_background_ratio = '0';
-        }
-        memoryReferenceState = { ...memorySavedState };
-        updateMemoryPendingIndicator();
+        memorySavedState = { ...sparseState };
+        memoryReferenceState = window.initPendingState(memoryCurrentState, memorySavedState, memoryDefaultState);
+        memoryPendingState = { ...memoryReferenceState };
+        renderMemoryCard();
     } else {
         showToast('Failed to save Memory settings', true);
     }
 }
 
 async function applyMemory() {
-    // Similar to save but just apply
-    const args = [];
-    const keys = ['swappiness', 'dirty_writeback_centisecs', 'dirty_expire_centisecs',
-        'stat_interval', 'vfs_cache_pressure', 'watermark_scale_factor'];
-
-    keys.forEach(k => args.push(`${k}=${memoryPendingState[k] || memoryCurrentState[k]}`));
-
-    if (memoryDirtyMode === 'ratio') {
-        args.push(`dirty_ratio=${memoryPendingState.dirty_ratio || '0'}`);
-        args.push(`dirty_background_ratio=${memoryPendingState.dirty_background_ratio || '0'}`);
-        args.push(`dirty_bytes=0`);
-        args.push(`dirty_background_bytes=0`);
-    } else {
-        args.push(`dirty_bytes=${memoryPendingState.dirty_bytes || '0'}`);
-        args.push(`dirty_background_bytes=${memoryPendingState.dirty_background_bytes || '0'}`);
-        args.push(`dirty_ratio=0`);
-        args.push(`dirty_background_ratio=0`);
-    }
+    const effectiveState = buildMemoryEffectiveState();
+    const args = Object.entries(effectiveState).map(([key, value]) => `${key}=${value}`);
 
     const result = await runMemoryBackend('apply', ...args);
     if (result && result.includes('Applied')) {

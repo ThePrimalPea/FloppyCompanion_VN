@@ -34,6 +34,7 @@ let adrenoReferenceState = {
     idler_idlewait: '15',
     idler_idleworkload: '5000'
 };
+let adrenoDefaultState = {};
 
 const runAdrenoBackend = (...args) => window.runTweakBackend('adreno', ...args);
 
@@ -89,39 +90,51 @@ function renderAdrenoCard() {
     const inputDowndiff = document.getElementById('adreno-downdifferential');
     if (valDowndiff) valDowndiff.textContent = adrenoCurrentState.idler_downdifferential || '--';
     if (inputDowndiff) {
-        const referenceVal = adrenoReferenceState.idler_downdifferential || adrenoCurrentState.idler_downdifferential || '';
-        inputDowndiff.placeholder = referenceVal;
-        if (adrenoPendingState.idler_downdifferential && adrenoPendingState.idler_downdifferential !== referenceVal) {
-            inputDowndiff.value = adrenoPendingState.idler_downdifferential;
-        } else {
-            inputDowndiff.value = '';
-        }
+        const { placeholder, value } = window.getTweakTextInputState(
+            'idler_downdifferential',
+            adrenoPendingState,
+            adrenoSavedState,
+            adrenoReferenceState,
+            adrenoDefaultState,
+            adrenoCurrentState,
+            '20'
+        );
+        inputDowndiff.placeholder = placeholder;
+        inputDowndiff.value = value;
     }
 
     const valIdlewait = document.getElementById('adreno-val-idlewait');
     const inputIdlewait = document.getElementById('adreno-idlewait');
     if (valIdlewait) valIdlewait.textContent = adrenoCurrentState.idler_idlewait || '--';
     if (inputIdlewait) {
-        const referenceVal = adrenoReferenceState.idler_idlewait || adrenoCurrentState.idler_idlewait || '';
-        inputIdlewait.placeholder = referenceVal;
-        if (adrenoPendingState.idler_idlewait && adrenoPendingState.idler_idlewait !== referenceVal) {
-            inputIdlewait.value = adrenoPendingState.idler_idlewait;
-        } else {
-            inputIdlewait.value = '';
-        }
+        const { placeholder, value } = window.getTweakTextInputState(
+            'idler_idlewait',
+            adrenoPendingState,
+            adrenoSavedState,
+            adrenoReferenceState,
+            adrenoDefaultState,
+            adrenoCurrentState,
+            '15'
+        );
+        inputIdlewait.placeholder = placeholder;
+        inputIdlewait.value = value;
     }
 
     const valIdleworkload = document.getElementById('adreno-val-idleworkload');
     const inputIdleworkload = document.getElementById('adreno-idleworkload');
     if (valIdleworkload) valIdleworkload.textContent = adrenoCurrentState.idler_idleworkload || '--';
     if (inputIdleworkload) {
-        const referenceVal = adrenoReferenceState.idler_idleworkload || adrenoCurrentState.idler_idleworkload || '';
-        inputIdleworkload.placeholder = referenceVal;
-        if (adrenoPendingState.idler_idleworkload && adrenoPendingState.idler_idleworkload !== referenceVal) {
-            inputIdleworkload.value = adrenoPendingState.idler_idleworkload;
-        } else {
-            inputIdleworkload.value = '';
-        }
+        const { placeholder, value } = window.getTweakTextInputState(
+            'idler_idleworkload',
+            adrenoPendingState,
+            adrenoSavedState,
+            adrenoReferenceState,
+            adrenoDefaultState,
+            adrenoCurrentState,
+            '5000'
+        );
+        inputIdleworkload.placeholder = placeholder;
+        inputIdleworkload.value = value;
     }
 
     updateAdrenoPendingIndicator();
@@ -137,12 +150,12 @@ async function loadAdrenoState() {
         idler_idleworkload: current.idler_idleworkload || '5000'
     };
 
-    adrenoSavedState = { ...saved };
+    adrenoDefaultState = { ...window.getDefaultTweakPreset('adreno') };
+    adrenoSavedState = window.buildSparseStateAgainstDefaults(saved, adrenoDefaultState);
 
-    const defAdreno = window.getDefaultTweakPreset('adreno');
-    adrenoPendingState = window.initPendingState(adrenoCurrentState, adrenoSavedState, defAdreno);
+    adrenoPendingState = window.initPendingState(adrenoCurrentState, adrenoSavedState, adrenoDefaultState);
 
-    const { reference } = window.resolveTweakReference(adrenoCurrentState, adrenoSavedState, defAdreno);
+    const { reference } = window.resolveTweakReference(adrenoCurrentState, adrenoSavedState, adrenoDefaultState);
     adrenoReferenceState = {
         adrenoboost: reference.adrenoboost || '0',
         idler_active: reference.idler_active || 'N',
@@ -154,16 +167,12 @@ async function loadAdrenoState() {
 }
 
 async function saveAdreno() {
-    await runAdrenoBackend('save',
-        adrenoPendingState.adrenoboost,
-        adrenoPendingState.idler_active,
-        adrenoPendingState.idler_downdifferential,
-        adrenoPendingState.idler_idlewait,
-        adrenoPendingState.idler_idleworkload
-    );
-    adrenoSavedState = { ...adrenoPendingState };
-    adrenoReferenceState = { ...adrenoSavedState };
-    updateAdrenoPendingIndicator();
+    const sparseState = window.buildSparseStateAgainstDefaults(adrenoPendingState, adrenoDefaultState);
+    await runAdrenoBackend('save', ...Object.entries(sparseState).map(([key, value]) => `${key}=${value}`));
+    adrenoSavedState = { ...sparseState };
+    adrenoReferenceState = window.initPendingState(adrenoCurrentState, adrenoSavedState, adrenoDefaultState);
+    adrenoPendingState = { ...adrenoReferenceState };
+    renderAdrenoCard();
     showToast(window.t ? window.t('toast.settingsSaved') : 'Settings saved');
 }
 
@@ -249,11 +258,16 @@ function initAdrenoTweak() {
         if (inputDowndiff) {
             inputDowndiff.addEventListener('input', (e) => {
                 if (e.target.value === '') {
-                    adrenoPendingState.idler_downdifferential = adrenoReferenceState.idler_downdifferential || adrenoCurrentState.idler_downdifferential || '20';
+                    adrenoPendingState.idler_downdifferential = window.getTweakDefaultValue(
+                        'idler_downdifferential',
+                        adrenoCurrentState,
+                        adrenoDefaultState,
+                        '20'
+                    );
                 } else {
                     adrenoPendingState.idler_downdifferential = e.target.value;
                 }
-                updateAdrenoPendingIndicator();
+                renderAdrenoCard();
             });
         }
 
@@ -261,11 +275,16 @@ function initAdrenoTweak() {
         if (inputIdlewait) {
             inputIdlewait.addEventListener('input', (e) => {
                 if (e.target.value === '') {
-                    adrenoPendingState.idler_idlewait = adrenoReferenceState.idler_idlewait || adrenoCurrentState.idler_idlewait || '15';
+                    adrenoPendingState.idler_idlewait = window.getTweakDefaultValue(
+                        'idler_idlewait',
+                        adrenoCurrentState,
+                        adrenoDefaultState,
+                        '15'
+                    );
                 } else {
                     adrenoPendingState.idler_idlewait = e.target.value;
                 }
-                updateAdrenoPendingIndicator();
+                renderAdrenoCard();
             });
         }
 
@@ -273,11 +292,16 @@ function initAdrenoTweak() {
         if (inputIdleworkload) {
             inputIdleworkload.addEventListener('input', (e) => {
                 if (e.target.value === '') {
-                    adrenoPendingState.idler_idleworkload = adrenoReferenceState.idler_idleworkload || adrenoCurrentState.idler_idleworkload || '5000';
+                    adrenoPendingState.idler_idleworkload = window.getTweakDefaultValue(
+                        'idler_idleworkload',
+                        adrenoCurrentState,
+                        adrenoDefaultState,
+                        '5000'
+                    );
                 } else {
                     adrenoPendingState.idler_idleworkload = e.target.value;
                 }
-                updateAdrenoPendingIndicator();
+                renderAdrenoCard();
             });
         }
 

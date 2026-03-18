@@ -46,9 +46,42 @@ get_saved() {
 
 # Save config (does not apply)
 save() {
+    if [ "$#" -eq 0 ]; then
+        rm -f "$CONFIG_FILE"
+        echo "saved"
+        return 0
+    fi
+
+    if echo "$1" | grep -q '='; then
+        local mode=""
+        local custom_freq=""
+
+        for arg in "$@"; do
+            key="${arg%%=*}"
+            val="${arg#*=}"
+            case "$key" in
+                mode) mode="$val" ;;
+                custom_freq) custom_freq="$val" ;;
+            esac
+        done
+
+        if [ -z "$mode" ] && [ -z "$custom_freq" ]; then
+            rm -f "$CONFIG_FILE"
+            echo "saved"
+            return 0
+        fi
+
+        mkdir -p "$(dirname "$CONFIG_FILE")"
+        : > "$CONFIG_FILE"
+        [ -n "$mode" ] && echo "mode=$mode" >> "$CONFIG_FILE"
+        [ -n "$custom_freq" ] && echo "custom_freq=$custom_freq" >> "$CONFIG_FILE"
+        echo "saved"
+        return 0
+    fi
+
     local mode="$1"
     local custom_freq="$2"
-    
+
     mkdir -p "$(dirname "$CONFIG_FILE")"
     cat > "$CONFIG_FILE" << EOF
 mode=$mode
@@ -106,7 +139,8 @@ case "$1" in
         get_saved
         ;;
     save)
-        save "$2" "$3"
+        shift
+        save "$@"
         ;;
     apply)
         apply "$2" "$3"

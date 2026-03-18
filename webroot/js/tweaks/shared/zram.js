@@ -4,6 +4,7 @@ let zramCurrentState = {};
 let zramSavedState = {};
 let zramPendingState = {};
 let zramReferenceState = {};
+let zramDefaultState = {};
 
 // Helper: Convert bytes to MiB for display
 function bytesToMiB(bytes) {
@@ -23,17 +24,16 @@ async function loadZramState() {
         const { current, saved } = await window.loadTweakState('zram');
 
         zramCurrentState = current;
-        zramSavedState = saved;
+        zramDefaultState = { ...window.getDefaultTweakPreset('zram') };
+        zramSavedState = window.buildSparseStateAgainstDefaults(saved, zramDefaultState);
 
         // Initialize pending state from saved if available, else from current, else from defaults
-        const defZram = window.getDefaultTweakPreset('zram');
-
-        zramPendingState = window.initPendingState(zramCurrentState, zramSavedState, defZram);
+        zramPendingState = window.initPendingState(zramCurrentState, zramSavedState, zramDefaultState);
         if (zramPendingState.enabled === undefined) zramPendingState.enabled = '1';
         if (!zramPendingState.algorithm) zramPendingState.algorithm = 'lz4';
         if (!zramPendingState.disksize) zramPendingState.disksize = '0';
 
-        const { reference } = window.resolveTweakReference(zramCurrentState, zramSavedState, defZram);
+        const { reference } = window.resolveTweakReference(zramCurrentState, zramSavedState, zramDefaultState);
         zramReferenceState = {
             disksize: reference.disksize || '0',
             algorithm: reference.algorithm || 'lz4',
@@ -80,11 +80,17 @@ function renderZramCard() {
             customBtn.classList.add('selected');
             if (customInputRow) customInputRow.classList.remove('hidden');
             if (customInput) {
-                customInput.placeholder = referenceMiB.toString();
-                // Only set value if it's a custom (non-preset) size
+                const defaultDisksize = window.getTweakDefaultValue('disksize', zramCurrentState, zramDefaultState, '0');
+                const defaultMiB = bytesToMiB(parseInt(defaultDisksize) || 0);
                 const pendingMiB = bytesToMiB(parseInt(pendingSize) || 0);
-                if (pendingMiB > 0 && ![1536, 2048, 3072, 4096, 6144, 8192].includes(pendingMiB)) {
-                    customInput.value = pendingMiB !== referenceMiB ? pendingMiB : '';
+                const hasSavedCustom = window.hasTweakSavedOverride('disksize', zramSavedState);
+                const showValue = hasSavedCustom || pendingSize !== defaultDisksize;
+
+                customInput.placeholder = defaultMiB.toString();
+                if (pendingMiB > 0 && ![1536, 2048, 3072, 4096, 6144, 8192].includes(pendingMiB) && showValue) {
+                    customInput.value = pendingMiB;
+                } else {
+                    customInput.value = '';
                 }
             }
         } else if (customInputRow) {
@@ -191,21 +197,15 @@ async function toggleZramEnabled(enabled) {
 
 // Save ZRAM config
 async function saveZram() {
-    const result = await runZramBackend('save',
-        zramPendingState.disksize,
-        zramPendingState.algorithm,
-        zramPendingState.enabled
-    );
+    const sparseState = window.buildSparseStateAgainstDefaults(zramPendingState, zramDefaultState);
+    const result = await runZramBackend('save', ...Object.entries(sparseState).map(([key, value]) => `${key}=${value}`));
 
     if (result && result.includes('saved')) {
-        zramSavedState = { ...zramPendingState };
-        zramReferenceState = {
-            disksize: zramSavedState.disksize || '0',
-            algorithm: zramSavedState.algorithm || 'lz4',
-            enabled: zramSavedState.enabled !== undefined ? zramSavedState.enabled : '1'
-        };
+        zramSavedState = { ...sparseState };
+        zramReferenceState = window.initPendingState(zramCurrentState, zramSavedState, zramDefaultState);
+        zramPendingState = { ...zramReferenceState };
         showToast('ZRAM settings saved');
-        updateZramPendingIndicator();
+        renderZramCard();
     } else {
         showToast('Failed to save ZRAM settings', true);
     }
@@ -263,10 +263,16 @@ function initZramTweak() {
     const customInput = document.getElementById('zram-custom-size');
     if (customInput) {
         customInput.addEventListener('input', () => {
+            if (customInput.value === '') {
+                zramPendingState.disksize = window.getTweakDefaultValue('disksize', zramCurrentState, zramDefaultState, '0');
+                renderZramCard();
+                return;
+            }
+
             const mib = parseInt(customInput.value) || 0;
             if (mib >= 1 && mib <= 65536) {
                 zramPendingState.disksize = mibToBytes(mib).toString();
-                updateZramPendingIndicator();
+                renderZramCard();
             }
         });
     }

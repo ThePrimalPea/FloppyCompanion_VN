@@ -64,6 +64,28 @@ get_saved() {
 
 # Save config
 save() {
+    if [ "$#" -eq 0 ]; then
+        rm -f "$CONFIG_FILE"
+        echo "saved"
+        return 0
+    fi
+
+    if echo "$1" | grep -q '='; then
+        mkdir -p "$(dirname "$CONFIG_FILE")"
+        : > "$CONFIG_FILE"
+        for arg in "$@"; do
+            key="${arg%%=*}"
+            val="${arg#*=}"
+            [ -n "$key" ] && [ -n "$val" ] && echo "$key=$val" >> "$CONFIG_FILE"
+        done
+
+        if [ ! -s "$CONFIG_FILE" ]; then
+            rm -f "$CONFIG_FILE"
+        fi
+        echo "saved"
+        return 0
+    fi
+
     adrenoboost="$1"
     idler_active="$2"
     idler_downdifferential="$3"
@@ -161,7 +183,8 @@ case "$1" in
         get_saved
         ;;
     save)
-        save "$2" "$3" "$4" "$5" "$6"
+        shift
+        save "$@"
         ;;
     apply)
         apply "$2" "$3" "$4" "$5" "$6"

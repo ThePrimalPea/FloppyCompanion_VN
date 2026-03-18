@@ -191,16 +191,20 @@ function renderLmkdBoolean(key) {
 function renderLmkdNumber(key) {
     const input = document.getElementById(`lmkd-${key}`);
     const label = document.getElementById(`lmkd-val-${key}`);
-    const referenceVal = String(
-        lmkdReferenceState[key]
-        ?? getLmkdDefaultValue(key)
-    );
-    const pendingVal = getLmkdResolvedValue(key);
     const currentVal = lmkdCurrentState[key] ?? getLmkdDefaultValue(key);
 
     if (input) {
-        input.placeholder = referenceVal;
-        input.value = pendingVal !== referenceVal ? pendingVal : '';
+        const { placeholder, value } = window.getTweakTextInputState(
+            key,
+            lmkdPendingState,
+            lmkdSavedState,
+            lmkdReferenceState,
+            lmkdDefaultState,
+            lmkdCurrentState,
+            getLmkdFallbackValue(key)
+        );
+        input.placeholder = placeholder;
+        input.value = value;
     }
 
     if (label) {
@@ -244,7 +248,12 @@ function setLmkdBoolean(key, enabled) {
 
 function setLmkdNumber(key, value) {
     if (value === '' || value === undefined) {
-        lmkdPendingState[key] = getLmkdDefaultValue(key);
+        lmkdPendingState[key] = window.getTweakDefaultValue(
+            key,
+            lmkdCurrentState,
+            lmkdDefaultState,
+            getLmkdFallbackValue(key)
+        );
     } else {
         lmkdPendingState[key] = String(value);
     }

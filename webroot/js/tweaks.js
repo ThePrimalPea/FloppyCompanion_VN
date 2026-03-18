@@ -402,6 +402,68 @@ window.initPendingState = function (current, saved, defaults) {
     return { ...current, ...defaults };
 };
 
+window.buildSparseStateAgainstDefaults = function (source = {}, defaults = {}) {
+    const sparse = {};
+
+    Object.entries(source || {}).forEach(([key, value]) => {
+        if (value === undefined || value === '') return;
+
+        if (Object.prototype.hasOwnProperty.call(defaults || {}, key) && String(value) === String(defaults[key])) {
+            return;
+        }
+
+        sparse[key] = String(value);
+    });
+
+    return sparse;
+};
+
+window.getTweakDefaultValue = function (key, current = {}, defaults = {}, fallback = '') {
+    if (Object.prototype.hasOwnProperty.call(defaults || {}, key) && defaults[key] !== '') {
+        return String(defaults[key]);
+    }
+
+    if (Object.prototype.hasOwnProperty.call(current || {}, key) && current[key] !== '') {
+        return String(current[key]);
+    }
+
+    return String(fallback ?? '');
+};
+
+window.getTweakReferenceValue = function (key, reference = {}, defaults = {}, current = {}, fallback = '') {
+    if (Object.prototype.hasOwnProperty.call(reference || {}, key) && reference[key] !== '') {
+        return String(reference[key]);
+    }
+
+    return window.getTweakDefaultValue(key, current, defaults, fallback);
+};
+
+window.getTweakPendingValue = function (key, pending = {}, reference = {}, defaults = {}, current = {}, fallback = '') {
+    if (Object.prototype.hasOwnProperty.call(pending || {}, key) && pending[key] !== '') {
+        return String(pending[key]);
+    }
+
+    return window.getTweakReferenceValue(key, reference, defaults, current, fallback);
+};
+
+window.hasTweakSavedOverride = function (key, saved = {}) {
+    return Object.prototype.hasOwnProperty.call(saved || {}, key) && saved[key] !== '';
+};
+
+window.shouldShowTweakTextValue = function (key, pending = {}, saved = {}, reference = {}, defaults = {}, current = {}, fallback = '') {
+    return window.getTweakPendingValue(key, pending, reference, defaults, current, fallback) !==
+        window.getTweakDefaultValue(key, current, defaults, fallback);
+};
+
+window.getTweakTextInputState = function (key, pending = {}, saved = {}, reference = {}, defaults = {}, current = {}, fallback = '') {
+    const placeholder = window.getTweakDefaultValue(key, current, defaults, fallback);
+    const value = window.shouldShowTweakTextValue(key, pending, saved, reference, defaults, current, fallback)
+        ? window.getTweakPendingValue(key, pending, reference, defaults, current, fallback)
+        : '';
+
+    return { placeholder, value };
+};
+
 window.setPendingIndicator = function (indicatorId, hasPending) {
     const indicator = document.getElementById(indicatorId);
     if (!indicator) return;
