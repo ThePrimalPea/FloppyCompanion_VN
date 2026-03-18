@@ -17,6 +17,62 @@ DATA_DIR="/data/adb/floppy_companion"
 mkdir -p "$DATA_DIR/config"
 mkdir -p "$DATA_DIR/presets"
 
+update_module_prop_description() {
+    local prop_file="$1"
+    local description_value="$2"
+    local overlay_dir="$DATA_DIR/runtime"
+    local overlay_file="$overlay_dir/module.prop"
+    local tmp_file
+
+    [ -f "$prop_file" ] || return 1
+
+    mkdir -p "$overlay_dir" || return 1
+
+    if awk -v target="$prop_file" '$2 == target { found = 1; exit } END { exit !found }' /proc/mounts 2>/dev/null; then
+        umount "$prop_file" 2>/dev/null || umount -l "$prop_file" 2>/dev/null || true
+    fi
+
+    tmp_file="${overlay_file}.tmp.$$"
+
+    if ! awk -v desc="$description_value" '
+        BEGIN { updated = 0 }
+        /^description=/ {
+            print "description=" desc
+            updated = 1
+            next
+        }
+        { print }
+        END {
+            if (!updated) {
+                print "description=" desc
+            }
+        }
+    ' "$prop_file" > "$tmp_file"; then
+        rm -f "$tmp_file"
+        return 1
+    fi
+
+    chmod --reference="$prop_file" "$tmp_file" 2>/dev/null || chmod 0644 "$tmp_file" 2>/dev/null || true
+    chown --reference="$prop_file" "$tmp_file" 2>/dev/null || true
+    chcon --reference="$prop_file" "$tmp_file" 2>/dev/null || true
+
+    if ! mv -f "$tmp_file" "$overlay_file" 2>/dev/null; then
+        if ! cat "$tmp_file" > "$overlay_file" 2>/dev/null; then
+            rm -f "$tmp_file"
+            return 1
+        fi
+        rm -f "$tmp_file"
+    fi
+
+    chmod --reference="$prop_file" "$overlay_file" 2>/dev/null || chmod 0644 "$overlay_file" 2>/dev/null || true
+    chown --reference="$prop_file" "$overlay_file" 2>/dev/null || true
+    chcon --reference="$prop_file" "$overlay_file" 2>/dev/null || true
+
+    mount -o bind "$overlay_file" "$prop_file" 2>/dev/null || mount --bind "$overlay_file" "$prop_file" 2>/dev/null || return 1
+
+    return 0
+}
+
 # --- Capture Kernel Defaults (before any tweaks) ---
 if [ -f "$MODDIR/tweaks/capture_defaults.sh" ]; then
     sh "$MODDIR/tweaks/capture_defaults.sh"
@@ -174,5 +230,6 @@ else
 fi
 
 if [ -f "$MODDIR/module.prop" ]; then
-    sed -i "s/^description=.*/description=$DESCRIPTION Detected kernel: $INFO $STATUS/" "$MODDIR/module.prop"
+    INFO=$(printf '%s' "$INFO" | tr '\r\n' ' ' | sed 's/[[:space:]]\+/ /g; s/^ //; s/ $//')
+    update_module_prop_description "$MODDIR/module.prop" "$DESCRIPTION Detected kernel: $INFO $STATUS"
 fi
