@@ -38,7 +38,10 @@
           "tooltipKey": "tweaks.tooltip.undervolt",
           "requires": {
             "var": "kernelName",
-            "eq": "Floppy1280"
+            "in": [
+              "Floppy1280",
+              "Floppy2100"
+            ]
           }
         },
         {

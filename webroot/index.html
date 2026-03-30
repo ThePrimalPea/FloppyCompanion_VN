@@ -368,7 +368,7 @@
                                     </label>
                                 </div>
                             </div>
-                            <div class="slider-container tweak-separator"
+                            <div class="slider-container tweak-separator" id="undervolt-container-little"
                                 style="border-top: 1px solid var(--md-sys-color-outline-variant); padding-top: 2px; margin-top: 20px;">
                                 <div class="tweak-row" style="border-bottom: none; padding-bottom: 4px;">
                                     <div class="tweak-info-col">
@@ -386,7 +386,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="slider-container tweak-separator">
+                            <div class="slider-container tweak-separator" id="undervolt-container-big">
                                 <div class="tweak-row" style="border-bottom: none; padding-bottom: 4px;">
                                     <div class="tweak-info-col">
                                         <span class="tweak-label" data-i18n="tweaks.undervolt.big">Big Cluster</span>
@@ -402,7 +402,23 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="slider-container">
+                            <div class="slider-container tweak-separator hidden" id="undervolt-container-prime">
+                                <div class="tweak-row" style="border-bottom: none; padding-bottom: 4px;">
+                                    <div class="tweak-info-col">
+                                        <span class="tweak-label" data-i18n="tweaks.undervolt.prime">Prime Cluster</span>
+                                        <span class="tweak-val" id="undervolt-val-prime">0%</span>
+                                    </div>
+                                </div>
+                                <div class="value-row">
+                                    <input type="range" id="undervolt-slider-prime"
+                                        class="styled-slider tweak-slider-locked" min="0" max="15" value="0">
+                                    <div class="custom-input-row" style="margin-top: 0;">
+                                        <input type="number" id="undervolt-input-prime" value="0" min="0" max="100">
+                                        <span class="input-suffix">%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="slider-container" id="undervolt-container-gpu">
                                 <div class="tweak-row" style="border-bottom: none; padding-bottom: 4px;">
                                     <div class="tweak-info-col">
                                         <span class="tweak-label" data-i18n="tweaks.undervolt.gpu">GPU</span>

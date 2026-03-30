@@ -1,21 +1,41 @@
 // Undervolt Tweak
 
+const UNDERVOLT_KEYS = ['little', 'big', 'prime', 'gpu'];
+const UNDERVOLT_BASE_STATE = { little: '0', big: '0', prime: '0', gpu: '0' };
+
 let undervoltAvailable = false;
-let undervoltCurrentState = { little: '0', big: '0', gpu: '0' };
-let undervoltSavedState = { little: '0', big: '0', gpu: '0' }; // From config file
-let undervoltPendingState = { little: '0', big: '0', gpu: '0' };
-let undervoltReferenceState = { little: '0', big: '0', gpu: '0' };
+let undervoltCapabilities = { little: '0', big: '0', prime: '0', gpu: '0' };
+let undervoltCurrentState = { ...UNDERVOLT_BASE_STATE };
+let undervoltSavedState = { ...UNDERVOLT_BASE_STATE }; // From config file
+let undervoltPendingState = { ...UNDERVOLT_BASE_STATE };
+let undervoltReferenceState = { ...UNDERVOLT_BASE_STATE };
 
 const runUndervoltBackend = (...args) => window.runTweakBackend('undervolt', ...args);
 
+function getSupportedUndervoltKeys() {
+    return UNDERVOLT_KEYS.filter((key) => undervoltCapabilities[key] === '1');
+}
+
+function normalizeUndervoltState(state) {
+    return {
+        little: state.little || '0',
+        big: state.big || '0',
+        prime: state.prime || '0',
+        gpu: state.gpu || '0'
+    };
+}
+
 async function checkUndervoltAvailable() {
-    // Only available on Floppy1280
-    if (window.KERNEL_NAME !== 'Floppy1280') {
+    if (!['Floppy1280', 'Floppy2100'].includes(window.KERNEL_NAME)) {
         undervoltAvailable = false;
         return false;
     }
-    const output = await runUndervoltBackend('is_available');
-    undervoltAvailable = (output === 'available=1');
+    const [availabilityOutput, capabilitiesOutput] = await Promise.all([
+        runUndervoltBackend('is_available'),
+        runUndervoltBackend('get_capabilities')
+    ]);
+    undervoltAvailable = (availabilityOutput === 'available=1');
+    undervoltCapabilities = { ...undervoltCapabilities, ...parseKeyValue(capabilitiesOutput) };
     return undervoltAvailable;
 }
 
@@ -29,19 +49,16 @@ function loadUndervoltState() {
         document.getElementById('undervolt-card').classList.remove('hidden');
 
         // Load current and saved states in parallel
-        window.loadTweakState('undervolt').then(({ current, saved, savedOutput }) => {
-            undervoltCurrentState = current;
-            undervoltSavedState = saved;
+        window.loadTweakState('undervolt').then(({ current, saved }) => {
+            undervoltCurrentState = normalizeUndervoltState(current);
+            undervoltSavedState = normalizeUndervoltState(saved);
 
             const defUndervolt = window.getDefaultTweakPreset('undervolt');
-            undervoltPendingState = window.initPendingState(undervoltCurrentState, undervoltSavedState, defUndervolt);
+            const normalizedDefaults = normalizeUndervoltState(defUndervolt || {});
+            undervoltPendingState = normalizeUndervoltState(window.initPendingState(undervoltCurrentState, undervoltSavedState, normalizedDefaults));
 
-            const { reference } = window.resolveTweakReference(undervoltCurrentState, undervoltSavedState, defUndervolt);
-            undervoltReferenceState = {
-                little: reference.little || '0',
-                big: reference.big || '0',
-                gpu: reference.gpu || '0'
-            };
+            const { reference } = window.resolveTweakReference(undervoltCurrentState, undervoltSavedState, normalizedDefaults);
+            undervoltReferenceState = normalizeUndervoltState(reference);
 
             renderUndervoltCard();
         });
@@ -49,7 +66,14 @@ function loadUndervoltState() {
 }
 
 function renderUndervoltCard() {
-    const elements = ['little', 'big', 'gpu'];
+    UNDERVOLT_KEYS.forEach((key) => {
+        const container = document.getElementById(`undervolt-container-${key}`);
+        if (container) {
+            container.classList.toggle('hidden', undervoltCapabilities[key] !== '1');
+        }
+    });
+
+    const elements = getSupportedUndervoltKeys();
 
     elements.forEach(el => {
         const valEl = document.getElementById(`undervolt-val-${el}`);
@@ -83,7 +107,7 @@ function renderUndervoltCard() {
     const switchEl = document.getElementById('undervolt-unlock-switch');
     if (switchEl) {
         const isUnlocked = switchEl.checked;
-        const sliders = ['little', 'big', 'gpu'].map(t => document.getElementById(`undervolt-slider-${t}`));
+        const sliders = elements.map(t => document.getElementById(`undervolt-slider-${t}`));
         sliders.forEach(slider => {
             if (slider) updateSliderTicks(slider, isUnlocked);
         });
@@ -92,7 +116,7 @@ function renderUndervoltCard() {
     // High-value warning logic (show if any value > 10)
     const highWarning = document.getElementById('undervolt-high-warning');
     if (highWarning) {
-        const anyHigh = ['little', 'big', 'gpu'].some(el => {
+        const anyHigh = elements.some(el => {
             const val = parseInt(undervoltPendingState[el] || '0');
             return val > 10;
         });
@@ -136,33 +160,28 @@ function updateSliderTicks(slider, isUnlocked) {
 }
 
 function updateUndervoltPendingIndicator() {
-    // Compare pending with saved (or current/default)
-    const reference = undervoltReferenceState || { little: '0', big: '0', gpu: '0' };
-
-    const isChanged =
-        undervoltPendingState.little !== reference.little ||
-        undervoltPendingState.big !== reference.big ||
-        undervoltPendingState.gpu !== reference.gpu;
+    const reference = undervoltReferenceState || UNDERVOLT_BASE_STATE;
+    const isChanged = getSupportedUndervoltKeys().some((key) => undervoltPendingState[key] !== reference[key]);
 
     window.setPendingIndicator('undervolt-pending-indicator', isChanged);
 }
 
 async function saveUndervolt() {
-    const { little, big, gpu } = undervoltPendingState;
-    await runUndervoltBackend('save', little, big, gpu);
-    undervoltSavedState = { ...undervoltPendingState };
-    undervoltReferenceState = { ...undervoltSavedState };
+    const { little, big, prime, gpu } = undervoltPendingState;
+    await runUndervoltBackend('save', little, big, prime, gpu);
+    undervoltSavedState = normalizeUndervoltState(undervoltPendingState);
+    undervoltReferenceState = normalizeUndervoltState(undervoltSavedState);
     updateUndervoltPendingIndicator();
     showToast(window.t ? window.t('toast.settingsSaved') : 'Settings saved');
 }
 
 async function applyUndervolt() {
-    const { little, big, gpu } = undervoltPendingState;
-    await runUndervoltBackend('apply', little, big, gpu);
+    const { little, big, prime, gpu } = undervoltPendingState;
+    await runUndervoltBackend('apply', little, big, prime, gpu);
 
     // Refresh current
     const current = await runUndervoltBackend('get_current');
-    undervoltCurrentState = parseKeyValue(current);
+    undervoltCurrentState = normalizeUndervoltState(parseKeyValue(current));
 
     renderUndervoltCard();
     showToast(window.t ? window.t('toast.settingsApplied') : 'Settings applied');
@@ -171,8 +190,9 @@ async function applyUndervolt() {
 // Clear undervolt persistence (called externally)
 async function clearUndervoltPersistence() {
     await runUndervoltBackend('clear_saved');
-    undervoltSavedState = { little: '0', big: '0', gpu: '0' };
-    undervoltPendingState = { little: '0', big: '0', gpu: '0' };
+    undervoltSavedState = { ...UNDERVOLT_BASE_STATE };
+    undervoltPendingState = { ...UNDERVOLT_BASE_STATE };
+    undervoltReferenceState = { ...UNDERVOLT_BASE_STATE };
     renderUndervoltCard();
 
     // Show the notice to inform user their settings were cleared
@@ -191,7 +211,7 @@ function initUndervoltTweak() {
                 undervoltPendingState = { ...undervoltPendingState, ...config };
                 
                 // Auto-unlock if any value exceeds safe limit (15)
-                const isHighValue = ['little', 'big', 'gpu'].some(key => {
+                const isHighValue = UNDERVOLT_KEYS.some(key => {
                     const val = parseInt(undervoltPendingState[key] || '0');
                     return val > 15;
                 });
@@ -215,7 +235,7 @@ function initUndervoltTweak() {
 
     // Unlock Switch
     // Event Listeners
-    ['little', 'big', 'gpu'].forEach(type => {
+    UNDERVOLT_KEYS.forEach(type => {
         const slider = document.getElementById(`undervolt-slider-${type}`);
         const input = document.getElementById(`undervolt-input-${type}`);
 

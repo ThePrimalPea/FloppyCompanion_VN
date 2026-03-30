@@ -208,10 +208,11 @@
             "desc3": "Less aggressive throttling. Frequencies: 2400 → 2288 → 2208 MHz. Runs hotter."
         },
         "undervolt": {
-            "title": "Undervolt",
-            "little": "Little Cluster",
-            "big": "Big Cluster",
-            "gpu": "GPU",
+  "title": "Undervolt",
+  "little": "Little Cluster",
+  "big": "Big Cluster",
+  "prime": "Prime Cluster",
+  "gpu": "GPU",
             "unlockRange": "Unlock full range",
             "notice": "Undervolt settings were cleared because you enabled or changed the Unlocked Mode. This prevents crashes from incompatible undervolt configurations.",
             "highValueWarning": "Values above 10% are almost guaranteed to cause an immediate crash. You may enter a bootloop until the module is disabled.",

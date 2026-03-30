@@ -143,19 +143,23 @@ if [ -f "$MODDIR/tweaks/iosched.sh" ]; then
 fi
 )
     }$(
-    if [ "$IS_1280" = "1" ]; then
-      cat << EOF_1280
+    if [ "$IS_1280" = "1" ] || [ "$IS_2100" = "1" ]; then
+      cat << EOF_EXYNOS_UV
 ,
+$(if [ "$IS_1280" = "1" ]; then cat << EOF_1280_THERMAL
     "thermal": {
       "mode": "$(cat /sys/devices/platform/10080000.BIG/thermal_mode 2>/dev/null || echo 1)",
       "custom_freq": "$(cat /sys/devices/platform/10080000.BIG/emergency_frequency 2>/dev/null || echo 2288000)"
     },
+EOF_1280_THERMAL
+fi)
     "undervolt": {
       "little": "$(cat /sys/kernel/exynos_uv/cpucl0_uv_percent 2>/dev/null || echo 0)",
       "big": "$(cat /sys/kernel/exynos_uv/cpucl1_uv_percent 2>/dev/null || echo 0)",
-      "gpu": "$(cat /sys/kernel/exynos_uv/gpu_uv_percent 2>/dev/null || echo 0)"
+      "prime": "$(cat /sys/kernel/exynos_uv/cpucl2_uv_percent 2>/dev/null || echo 0)",
+      "gpu": "$(cat /sys/kernel/exynos_uv/g3d_uv_percent 2>/dev/null || cat /sys/kernel/exynos_uv/gpu_uv_percent 2>/dev/null || echo 0)"
     }
-EOF_1280
+EOF_EXYNOS_UV
     fi
 )$(
     if [ "$IS_1280" = "1" ] || [ "$IS_2100" = "1" ]; then
