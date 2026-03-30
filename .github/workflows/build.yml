@@ -54,6 +54,11 @@ jobs:
           echo "zip_name=$zip_name" >> "$GITHUB_OUTPUT"
           echo "zip_stem=$zip_stem" >> "$GITHUB_OUTPUT"
 
+      - name: Verify packaged tools
+        run: |
+          zipinfo -1 "${{ steps.out.outputs.zip_path }}" | grep -qx 'tools/magiskboot'
+          zipinfo -1 "${{ steps.out.outputs.zip_path }}" | grep -qx 'tools/fkfeat/fkfeatctl'
+
       - name: Prepare artifact payload
         run: |
           rm -rf artifact_payload

@@ -88,10 +88,17 @@ cp customize.sh "$TEMP_DIR/"
 cp features_backend.sh "$TEMP_DIR/"
 cp -r tweaks "$TEMP_DIR/"
 cp -r webroot "$TEMP_DIR/"
-if [ -d tools ] && [ -n "$(ls -A tools 2>/dev/null)" ]; then
-    cp -r tools "$TEMP_DIR/"
-    rm -rf "$TEMP_DIR/tools/fkfeat"
+mkdir -p "$TEMP_DIR/tools"
+cp "$TOOLS_DIR/magiskboot" "$TEMP_DIR/tools/"
+
+if [ ! -x "$FKFEAT_DIR/fkfeatctl" ]; then
+    echo "Built fkfeat binary missing at $FKFEAT_DIR/fkfeatctl" >&2
+    exit 1
 fi
+
+mkdir -p "$TEMP_DIR/tools/fkfeat"
+cp "$FKFEAT_DIR/fkfeatctl" "$TEMP_DIR/tools/fkfeat/"
+chmod 755 "$TEMP_DIR/tools/magiskboot" "$TEMP_DIR/tools/fkfeat/fkfeatctl"
 
 # Create zip from temporary directory
 cd "$TEMP_DIR" || exit 1
