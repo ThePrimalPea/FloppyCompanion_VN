@@ -73,6 +73,15 @@
                     "url": "https://github.com/akifakif32"
                 }
             ]
+        },
+        "vi": {
+            "name": "Tiếng Việt",
+            "contributors": [
+                {
+                    "name": "The Primal Pea",
+                    "url": "https://github.com/ThePrimalPea"
+                }
+            ]
         }
     }
 }
