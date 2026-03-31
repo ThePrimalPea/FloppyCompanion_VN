@@ -344,6 +344,7 @@
         "presetLoadFailed": "Thất bại khi tải thiết lập sẵn",
         "presetDefaultApplied": "Thiết lập sẵn mặc định đã được áp dụng",
         "presetDefaultLoaded": "Thiết lập sẵn mặc định đã được tải",
+        "tweakDefaultLoaded": "Mặc định đã được tải cho {name}",
         "presetSavedApplied": "Thiết lập sẵn đã được lưu & áp dụng",
         "presetLoadedSaved": "Thiết lập sẵn đã được tải & lưu",
         "presetExportBuiltIn": "Không thể xuất các thiết lập sẵn được tích hợp",
