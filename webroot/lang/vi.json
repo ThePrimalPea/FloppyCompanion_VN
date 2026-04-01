@@ -53,7 +53,7 @@
         "title": "Giám sát",
         "memory": {
             "title": "Bộ nhớ",
-            "usedMemory": "Bộ nhớ đã Sử dụng",
+            "usedMemory": "Bộ nhớ Đã sử dụng",
             "usedSwap": "Swap (ZRAM / swapfile)",
             "totalSection": "Tổng Bộ nhớ",
             "totalLabel": "Tổng",
@@ -181,7 +181,7 @@
             "criticalUpgrade": "Nâng cấp Quan trọng",
             "upgradePressure": "Nâng cấp Áp suất",
             "downgradePressure": "Hạ cấp Áp suất",
-            "killHeaviestTask": "Diệt Nhiệm vụ Nặng nhất",
+            "killHeaviestTask": "Diệt Tác vụ Nặng nhất",
             "killTimeout": "Thời gian chờ Diệt",
             "psiPartialStall": "Ngừng Một phần PSI",
             "psiCompleteStall": "Ngừng Hoàn toàn PSI",
