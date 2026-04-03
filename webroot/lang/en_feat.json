@@ -72,5 +72,23 @@
     "mass_storage_hack": {
         "title": "Mass Storage support hack",
         "desc": "Injects mass_storage gadget handling into the vendor's init.exynos2100.usb.rc script to allow apps like DriveDroid to work."
+    },
+    "selinux_mode": {
+        "title": "Force SELinux mode",
+        "desc": "Force SELinux mode. For developers.",
+        "options": {
+            "0": {
+                "label": "Default",
+                "desc": "Use the kernel's default SELinux mode."
+            },
+            "1": {
+                "label": "Always Enforcing",
+                "desc": "Force SELinux Enforcing mode at boot."
+            },
+            "2": {
+                "label": "Always Permissive",
+                "desc": "Force SELinux Permissive mode at boot."
+            }
+        }
     }
 }

@@ -269,6 +269,9 @@ function renderFeatures(schema, procCmdline) {
     orderedSchema.forEach(item => {
         const hasCurrentVal = Object.prototype.hasOwnProperty.call(currentFeatures, item.key);
         const hasLiveVal = Object.prototype.hasOwnProperty.call(currentLiveFeatures, item.key);
+        const hasExplicitZeroOption = item.type === 'select'
+            && Array.isArray(item.options)
+            && item.options.some(opt => String(opt.val) === '0');
 
         // Skip entirely if experimental and toggle off, UNLESS enabled
         const currentVal = hasCurrentVal
@@ -288,7 +291,10 @@ function renderFeatures(schema, procCmdline) {
         // Default Value Logic for toggle ON
         let defaultVal = '1';
         if (item.type === 'select' && item.options && item.options.length > 0) {
-            defaultVal = item.options[0].val;
+            const preferredDefault = hasExplicitZeroOption
+                ? item.options.find(opt => String(opt.val) !== '0')
+                : item.options[0];
+            defaultVal = preferredDefault ? preferredDefault.val : item.options[0].val;
         }
 
         let liveVal = null;
@@ -357,10 +363,12 @@ function renderFeatures(schema, procCmdline) {
             // Add "Disabled" option with translated strings
             const disabledLabel = t('features.optionDisabled');
             const disabledDesc = t('features.disabledDesc');
-            const optionsWithDisabled = [
-                { val: '0', label: disabledLabel, desc: disabledDesc, experimental: false, isDisabledOption: true },
-                ...item.options
-            ];
+            const optionsWithDisabled = hasExplicitZeroOption
+                ? [...item.options]
+                : [
+                    { val: '0', label: disabledLabel, desc: disabledDesc, experimental: false, isDisabledOption: true },
+                    ...item.options
+                ];
 
             // Filter options
             const visibleOptions = optionsWithDisabled.filter(opt =>
@@ -393,7 +401,13 @@ function renderFeatures(schema, procCmdline) {
 
         // Current Value Display
         let displayValText = currentVal;
-        if (currentVal === '0') {
+        if (item.type === 'select' && item.options && item.options.length > 0 && hasExplicitZeroOption) {
+            const currentOption = item.options.find(opt => String(opt.val) === currentVal);
+            if (currentOption) {
+                const currentLabel = tf(item.key, 'label', currentVal, currentFamily) || currentOption.label || currentVal;
+                displayValText += ` (${currentLabel})`;
+            }
+        } else if (currentVal === '0') {
             displayValText += ' (' + (t('features.optionDisabled')) + ')';
         }
         const currentValueHtml = `<div class="current-value-display">${t('features.currentLabel')} ${displayValText}</div>`;
