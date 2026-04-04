@@ -99,6 +99,14 @@
                     "save": true
                 },
                 {
+                    "key": "init_protection",
+                    "title": "Init Protection",
+                    "type": "toggle",
+                    "desc": "Prevent Power HALs and init scripts from modifying kernel knobs. Disable if you want the ROM to control performance.",
+                    "save": true,
+                    "persist_type": "keyval"
+                },
+                {
                     "key": "selinux_mode",
                     "title": "Force SELinux mode",
                     "type": "select",

@@ -43,6 +43,10 @@
         "title": "Desactivar Protección Init",
         "desc": "Permite que los Power HALs y scripts de init modifiquen parámetros del kernel. Activa si quieres que la ROM controle el rendimiento."
     },
+    "init_protection": {
+        "title": "Protección Init",
+        "desc": "Evita que los Power HALs y scripts de init modifiquen parámetros del kernel. Desactívala si quieres que la ROM controle el rendimiento."
+    },
     "legacy_timestamp_source": {
         "title": "Timestamp Legado",
         "desc": "Corrige problemas de duración de grabación de video en ROMs con HALs de cámara antiguas."

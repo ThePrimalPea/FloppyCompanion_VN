@@ -554,12 +554,15 @@ async function applyChanges() {
                 if (feature && feature.save) {
                     try {
                         let pRes;
-                        if (val === '0') {
+                        const persistType = feature.persist_type || feature.type;
+                        const shouldPersistZero = feature.persist_zero === true || persistType === 'keyval';
+
+                        if (val === '0' && !shouldPersistZero) {
                             // Disabled: Remove from cache entirely
                             pRes = await exec(`sh /data/adb/modules/floppy_companion/persistence.sh remove "${key}"`);
                         } else {
                             // Enabled: Save to cache
-                            pRes = await exec(`sh /data/adb/modules/floppy_companion/persistence.sh save "${key}" "${val}" "${feature.type}"`);
+                            pRes = await exec(`sh /data/adb/modules/floppy_companion/persistence.sh save "${key}" "${val}" "${persistType}"`);
                         }
                         logToModal(pRes.trim());
                     } catch (pe) {
