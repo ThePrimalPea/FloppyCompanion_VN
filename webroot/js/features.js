@@ -348,10 +348,13 @@ function renderFeatures(schema, procCmdline) {
         // 3. Experimental Warning
         if (item.experimental) {
             const bubbleId = `bubble-experimental-${item.key}`;
+            const experimentalViewBox = warningIcon.viewBox === '0 -960 960 960'
+                ? '-64 -1024 1088 1088'
+                : warningIcon.viewBox;
             statusIconsHtml += `
                 <div class="status-icon-wrapper beer">
                     <button type="button" class="status-icon-button icon-button transparent circle" aria-label="${t('features.tooltipExperimental')}" onclick="toggleBubble('${bubbleId}', event)">
-                        <svg class="status-icon experimental" viewBox="${warningIcon.viewBox}">
+                        <svg class="status-icon experimental" viewBox="${experimentalViewBox}" aria-hidden="true">
                             <path fill="currentColor" d="${warningIcon.d}"/>
                         </svg>
                     </button>
