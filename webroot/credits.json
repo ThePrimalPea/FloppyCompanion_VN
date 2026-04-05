@@ -8,7 +8,6 @@
     ],
     "translations": {
         "en": {
-            "name": "English",
             "contributors": [
                 {
                     "name": "Flopster101",
@@ -17,7 +16,6 @@
             ]
         },
         "es": {
-            "name": "Español",
             "contributors": [
                 {
                     "name": "Flopster101",
@@ -26,7 +24,6 @@
             ]
         },
         "tr": {
-            "name": "Türkçe",
             "contributors": [
                 {
                     "name": "NotZezu",
@@ -39,7 +36,6 @@
             ]
         },
         "uk": {
-            "name": "Українська",
             "contributors": [
                 {
                     "name": "NiFate",
@@ -48,7 +44,6 @@
             ]
         },
         "ru": {
-            "name": "Русский",
             "contributors": [
                 {
                     "name": "ronin_blade",
@@ -57,7 +52,6 @@
             ]
         },
         "ar": {
-            "name": "العربية",
             "contributors": [
                 {
                     "name": "Maydo",
@@ -66,7 +60,6 @@
             ]
         },
         "az": {
-            "name": "Azərbaycanca",
             "contributors": [
                 {
                     "name": "akifakif32",
@@ -75,7 +68,6 @@
             ]
         },
         "vi": {
-            "name": "Tiếng Việt",
             "contributors": [
                 {
                     "name": "The Primal Pea",

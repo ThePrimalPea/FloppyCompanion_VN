@@ -6,8 +6,10 @@ Want to translate FloppyCompanion? Great! Here's how:
 
 ### New Translation
 1. Copy `repo/webroot/lang/en.json` and `repo/webroot/lang/en_feat.json`
-2. Rename them to your language code (e.g., `fr.json`, `de.json`)
+2. Rename them to your language code (e.g., `fr.json`, `de.json`, or `pt_BR.json` if you need a region-specific locale)
 3. Translate the text (keep the keys, structure, HTML tags, and placeholders like `{path}`)
+4. Add your language entry to `repo/webroot/lang/languages.json`
+5. Add translator credits for the language in `repo/webroot/credits.json`
 
 ### Expanding an Existing Translation
 If a translation file already exists for your language, just update it with any missing or incomplete translations.
@@ -26,16 +28,18 @@ Just translate the **values** (text after the colon). Keep everything else the s
 
 ## Adding a New Language
 
-After creating your translation files, add the language to `repo/webroot/js/i18n.js`:
+After creating your translation files, add the language to `repo/webroot/lang/languages.json`.
 
-```javascript
-availableLanguages: [
-    { code: 'en', name: 'English' },
-    { code: 'es', name: 'Español' },
-    { code: 'fr', name: 'Français' }  // Add yours here
-],
+Example:
+
+```json
+{
+  "code": "pt_BR",
+  "name": "Português (Brasil)",
+  "dir": "ltr"
+}
 ```
 
-Use the ISO 639-1 language code (2 letters) for `code`, and the native name for `name`.
+Use a two-letter language code when possible, or `language_REGION` when you need a regional variant like `pt_BR` or `es_AR`. Use the native language name for `name`, and `rtl` only for right-to-left languages.
 
 That's it! The dropdown will show your language automatically.

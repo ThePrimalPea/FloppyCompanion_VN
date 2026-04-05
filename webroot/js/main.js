@@ -855,10 +855,27 @@ function renderTranslationCredits(container, data) {
         return;
     }
 
+    const manifestOrder = (window.I18N && Array.isArray(window.I18N.availableLanguages))
+        ? window.I18N.availableLanguages.map(lang => lang.code)
+        : [];
+    const entries = Object.entries(data.translations);
+    const orderedEntries = [
+        ...manifestOrder
+            .filter(code => Object.prototype.hasOwnProperty.call(data.translations, code))
+            .map(code => [code, data.translations[code]]),
+        ...entries
+            .filter(([code]) => !manifestOrder.includes(code))
+            .sort(([a], [b]) => a.localeCompare(b))
+    ];
+
     let html = '';
-    for (const [langCode, langData] of Object.entries(data.translations)) {
+    for (const [langCode, langData] of orderedEntries) {
+        const langName = (window.I18N && typeof window.I18N.getLanguageName === 'function')
+            ? window.I18N.getLanguageName(langCode)
+            : (langData.name || langCode);
+
         html += `<div class="credits-language">`;
-        html += `<h4 class="credits-lang-name">${langData.name}</h4>`;
+        html += `<h4 class="credits-lang-name">${langName}</h4>`;
         html += `<ul class="credits-list">`;
         for (const contributor of langData.contributors) {
             if (contributor.url) {

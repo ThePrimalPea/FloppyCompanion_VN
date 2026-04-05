@@ -8,39 +8,104 @@ const I18N = {
     featureStrings: {},
     fallbackFeatureStrings: {},
     availableLanguages: [
-        { code: 'en', name: 'English' },
-        { code: 'es', name: 'Español' },
-        { code: 'tr', name: 'Türkçe' },
-        { code: 'vi', name: 'Tiếng Việt' },
-        { code: "uk", name: "Українська" },
-        { code: 'ru' , name: 'Русский' },
-        { code: 'ar', name: 'العربية' },
-        { code: 'az', name: 'Azərbaycanca' }
+        { code: 'en', name: 'English', dir: 'ltr' },
+        { code: 'es', name: 'Español', dir: 'ltr' },
+        { code: 'tr', name: 'Türkçe', dir: 'ltr' },
+        { code: 'vi', name: 'Tiếng Việt', dir: 'ltr' },
+        { code: 'uk', name: 'Українська', dir: 'ltr' },
+        { code: 'ru', name: 'Русский', dir: 'ltr' },
+        { code: 'ar', name: 'العربية', dir: 'rtl' },
+        { code: 'az', name: 'Azərbaycanca', dir: 'ltr' }
     ],
+
+    async loadLanguagesManifest() {
+        try {
+            const response = await fetch('lang/languages.json');
+            if (!response.ok) throw new Error('Failed to load language manifest');
+            const data = await response.json();
+
+            if (data && typeof data.fallback === 'string' && data.fallback) {
+                this.fallbackLang = data.fallback;
+            }
+
+            if (data && Array.isArray(data.languages) && data.languages.length > 0) {
+                this.availableLanguages = data.languages
+                    .filter(lang => lang && typeof lang.code === 'string' && typeof lang.name === 'string')
+                    .map(lang => ({
+                        code: lang.code,
+                        name: lang.name,
+                        dir: lang.dir || this.getDir(lang.code)
+                    }));
+            }
+        } catch (e) {
+            console.error('Failed to load language manifest:', e);
+        }
+    },
+
+    getLanguageMeta(code) {
+        const normalized = this.normalizeLanguageCode(code);
+        return this.availableLanguages.find(lang => lang.code === normalized);
+    },
+
+    getLanguageName(code) {
+        const lang = this.getLanguageMeta(code);
+        return lang ? lang.name : code;
+    },
+
+    normalizeLanguageCode(code) {
+        if (!code || typeof code !== 'string') return '';
+        const sanitized = code.trim().replace(/-/g, '_');
+        if (!sanitized) return '';
+        const parts = sanitized.split('_').filter(Boolean);
+        if (parts.length === 0) return '';
+        if (parts.length === 1) return parts[0].toLowerCase();
+        return `${parts[0].toLowerCase()}_${parts[1].toUpperCase()}`;
+    },
+
+    toHtmlLang(code) {
+        return this.normalizeLanguageCode(code).replace('_', '-');
+    },
+
+    resolveSupportedLanguage(code) {
+        const normalized = this.normalizeLanguageCode(code);
+        if (!normalized) return '';
+
+        const exact = this.availableLanguages.find(lang => lang.code === normalized);
+        if (exact) return exact.code;
+
+        const base = normalized.split('_')[0];
+        const baseMatch = this.availableLanguages.find(lang => lang.code === base);
+        return baseMatch ? baseMatch.code : '';
+    },
 
     // Get direction for language
     getDir(code) {
+        const meta = this.getLanguageMeta(code);
+        if (meta && meta.dir) return meta.dir;
         const rtlLangs = ['ar', 'he', 'fa', 'ur'];
-        return rtlLangs.includes(code) ? 'rtl' : 'ltr';
+        const base = this.normalizeLanguageCode(code).split('_')[0];
+        return rtlLangs.includes(base) ? 'rtl' : 'ltr';
     },
 
     // Initialize i18n system
     async init() {
+        await this.loadLanguagesManifest();
+
         // Load saved preference or detect from browser
-        const saved = localStorage.getItem('floppy_lang');
-        if (saved && this.availableLanguages.some(l => l.code === saved)) {
+        const saved = this.resolveSupportedLanguage(localStorage.getItem('floppy_lang'));
+        if (saved) {
             this.currentLang = saved;
         } else {
             // Try to detect from browser
-            const browserLang = navigator.language.split('-')[0];
-            if (this.availableLanguages.some(l => l.code === browserLang)) {
+            const browserLang = this.resolveSupportedLanguage(navigator.language);
+            if (browserLang) {
                 this.currentLang = browserLang;
             }
         }
 
         // Set initial direction
         document.documentElement.dir = this.getDir(this.currentLang);
-        document.documentElement.lang = this.currentLang;
+        document.documentElement.lang = this.toHtmlLang(this.currentLang);
 
         // Always load fallback first
         await this.loadLanguage(this.fallbackLang, true);
@@ -240,27 +305,28 @@ const I18N = {
 
     // Set language and reload
     async setLanguage(code) {
-        if (!this.availableLanguages.some(l => l.code === code)) return;
+        const resolvedCode = this.resolveSupportedLanguage(code);
+        if (!resolvedCode) return;
 
-        this.currentLang = code;
-        localStorage.setItem('floppy_lang', code);
+        this.currentLang = resolvedCode;
+        localStorage.setItem('floppy_lang', resolvedCode);
 
-        if (code === this.fallbackLang) {
+        if (resolvedCode === this.fallbackLang) {
             this.strings = this.fallbackStrings;
             this.featureStrings = this.fallbackFeatureStrings;
         } else {
-            await this.loadLanguage(code, false);
-            await this.loadFeatureStrings(code, false);
+            await this.loadLanguage(resolvedCode, false);
+            await this.loadFeatureStrings(resolvedCode, false);
         }
 
         this.applyTranslations();
 
         // Update direction
-        document.documentElement.dir = this.getDir(code);
-        document.documentElement.lang = code;
+        document.documentElement.dir = this.getDir(resolvedCode);
+        document.documentElement.lang = this.toHtmlLang(resolvedCode);
 
         // Dispatch event for dynamic content
-        document.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang: code, dir: this.getDir(code) } }));
+        document.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang: resolvedCode, dir: this.getDir(resolvedCode) } }));
     }
 };
 
@@ -277,4 +343,3 @@ function tf(featureKey, field, optionVal = null, family = null) {
 window.I18N = I18N;
 window.t = t;
 window.tf = tf;
-
