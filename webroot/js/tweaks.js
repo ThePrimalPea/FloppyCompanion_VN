@@ -195,13 +195,15 @@ function buildTweakCardShell(card) {
 
     if (card.tooltipKey) {
         const wrapper = document.createElement('div');
-        wrapper.className = 'status-icon-wrapper';
+        wrapper.className = 'status-icon-wrapper beer';
 
         const bubbleId = `${card.cardId}-bubble`;
         wrapper.innerHTML = `
-            <svg class="status-icon info" onclick="toggleBubble('${bubbleId}', event)" viewBox="0 0 24 24">
-                <path fill="currentColor" d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
-            </svg>
+            <button type="button" class="status-icon-button icon-button transparent circle" aria-label="Info" onclick="toggleBubble('${bubbleId}', event)">
+                <svg class="status-icon info" viewBox="0 0 24 24" width="14" height="14" style="width: 14px; height: 14px;">
+                    <path fill="currentColor" d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
+                </svg>
+            </button>
             <div id="${bubbleId}" class="status-bubble center hidden" data-i18n="${card.tooltipKey}"></div>
         `;
         titleWrap.appendChild(wrapper);
@@ -210,12 +212,13 @@ function buildTweakCardShell(card) {
     header.appendChild(titleWrap);
 
     const headerActions = document.createElement('div');
-    headerActions.className = 'card-header-actions';
+    headerActions.className = 'card-header-actions beer';
 
     if (card.pendingId) {
-        const pending = document.createElement('div');
+        const pending = document.createElement('button');
+        pending.type = 'button';
         pending.id = card.pendingId;
-        pending.className = 'pending-indicator hidden';
+        pending.className = 'pending-indicator icon-button transparent circle hidden';
 
         // Create the icon SVG
         const svg = window.FC && window.FC.icons && window.FC.icons.createSvg
@@ -249,7 +252,7 @@ function buildTweakCardShell(card) {
     if (card.id) {
         const reset = document.createElement('button');
         reset.type = 'button';
-        reset.className = 'card-reset-btn';
+        reset.className = 'card-reset-btn icon-button transparent circle';
 
         const resetLabel = window.t ? window.t('tweaks.resetCard') : 'Restore defaults';
         reset.setAttribute('aria-label', resetLabel);

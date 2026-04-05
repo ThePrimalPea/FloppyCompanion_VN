@@ -358,7 +358,29 @@ beer-css {
     justify-content: center;
     line-height: 0;
     vertical-align: middle;
-    margin-inline-start: 6px;
+    margin-inline-start: 0;
+}
+
+.status-icon-wrapper.beer {
+    min-inline-size: 22px;
+    min-block-size: 22px;
+}
+
+.status-icon-button {
+    padding: 0;
+}
+
+.status-icon-wrapper.beer .status-icon-button {
+    --_size: 22px;
+    inline-size: 22px !important;
+    block-size: 22px !important;
+    width: 22px;
+    height: 22px;
+    min-inline-size: 22px;
+    min-block-size: 22px;
+    color: var(--md-sys-color-on-surface-variant);
+    padding: 0 !important;
+    transform: translateX(-2px);
 }
 
 .tooltip-anchor {
@@ -369,26 +391,33 @@ beer-css {
 .status-icon {
     width: 24px;
     height: 24px;
-    cursor: pointer;
     opacity: 0.8;
     transition: opacity 0.2s;
     display: block;
+    transform-origin: center;
 }
 
-.status-icon:hover {
+.status-icon-wrapper:hover .status-icon,
+.status-icon-button:hover .status-icon {
     opacity: 1;
 }
 
 /* Tooltip/info icons are intentionally smaller than status icons */
 .status-icon.info {
-    width: 18px;
-    height: 18px;
+    inline-size: 14px;
+    block-size: 14px;
+    width: 14px;
+    height: 14px;
     color: var(--md-sys-color-primary);
+    transform: scale(0.72);
 }
 
 .status-icon.info.small {
-    width: 16px;
-    height: 16px;
+    inline-size: 12px;
+    block-size: 12px;
+    width: 12px;
+    height: 12px;
+    transform: scale(0.68);
 }
 
 .status-icon {
@@ -803,12 +832,28 @@ body {
     transition: background-color 0.2s;
 }
 
+.info-button.inline {
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    transform: scale(0.78);
+    transform-origin: center;
+    margin-inline-start: -2px;
+}
+
 .info-button:active {
     background-color: var(--md-sys-color-surface-variant);
 }
 
 .info-button .icon-svg-small {
     margin-inline-end: 0;
+}
+
+.info-button.inline .icon-svg-small {
+    width: 14px;
+    height: 14px;
+    transform: scale(0.72);
+    transform-origin: center;
 }
 
 /* Toast Notification */
@@ -1521,6 +1566,8 @@ body {
     border-radius: 50%;
     cursor: pointer;
     z-index: 10;
+    padding: 0;
+    border: none;
 }
 
 .card-header-actions {
@@ -1531,29 +1578,37 @@ body {
     display: flex;
     align-items: center;
     flex-shrink: 0;
+    gap: 4px;
 }
 
 .card-reset-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 38px;
+    width: 32px;
     height: 32px;
-    margin-inline-start: 4px;
-    padding: 0 0 0 8px;
+    margin-inline-start: 0;
+    padding: 0;
     border: none;
-    border-inline-start: 1px solid var(--md-sys-color-outline-variant);
     background: transparent;
     color: var(--md-sys-color-on-surface-variant);
     cursor: pointer;
 }
 
-.card-header-actions .pending-indicator.hidden + .card-reset-btn {
-    border-inline-start-color: transparent;
+.card-header-actions.beer .pending-indicator,
+.card-header-actions.beer .card-reset-btn {
+    min-inline-size: 32px;
+    box-shadow: none;
 }
 
 .card-reset-btn:active {
     transform: scale(0.96);
+}
+
+.status-icon-wrapper.beer .status-icon,
+.card-header-actions.beer .pending-icon,
+.card-header-actions.beer .card-reset-icon {
+    pointer-events: none;
 }
 
 .card-reset-btn .icon-svg,

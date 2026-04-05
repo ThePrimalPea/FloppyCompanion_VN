@@ -312,10 +312,12 @@ function renderFeatures(schema, procCmdline) {
         if (liveVal !== null && liveVal !== currentVal) {
             const bubbleId = `bubble-reboot-${item.key}`;
             statusIconsHtml += `
-                <div class="status-icon-wrapper" style="position:relative;">
-                    <svg class="status-icon reboot" onclick="toggleBubble('${bubbleId}', event)" viewBox="${rebootIcon.viewBox}">
-                        <path fill="currentColor" d="${rebootIcon.d}"/>
-                    </svg>
+                <div class="status-icon-wrapper beer">
+                    <button type="button" class="status-icon-button icon-button transparent circle" aria-label="${t('features.tooltipReboot')}" onclick="toggleBubble('${bubbleId}', event)">
+                        <svg class="status-icon reboot" viewBox="${rebootIcon.viewBox}">
+                            <path fill="currentColor" d="${rebootIcon.d}"/>
+                        </svg>
+                    </button>
                     <div id="${bubbleId}" class="status-bubble hidden">
                         ${t('features.tooltipReboot')}
                     </div>
@@ -330,10 +332,12 @@ function renderFeatures(schema, procCmdline) {
                 ? t('features.tooltipReadOnlyAllowed')
                 : t('features.tooltipReadOnlyBlocked');
             statusIconsHtml += `
-                <div class="status-icon-wrapper" style="position:relative;">
-                    <svg class="status-icon warning" onclick="toggleBubble('${bubbleId}', event)" viewBox="${infoIcon.viewBox}">
-                        <path fill="currentColor" d="${infoIcon.d}"/>
-                    </svg>
+                <div class="status-icon-wrapper beer">
+                    <button type="button" class="status-icon-button icon-button transparent circle" aria-label="${bubbleText}" onclick="toggleBubble('${bubbleId}', event)">
+                        <svg class="status-icon warning" viewBox="${infoIcon.viewBox}">
+                            <path fill="currentColor" d="${infoIcon.d}"/>
+                        </svg>
+                    </button>
                     <div id="${bubbleId}" class="status-bubble hidden">
                         ${bubbleText}
                     </div>
@@ -345,10 +349,12 @@ function renderFeatures(schema, procCmdline) {
         if (item.experimental) {
             const bubbleId = `bubble-experimental-${item.key}`;
             statusIconsHtml += `
-                <div class="status-icon-wrapper" style="position:relative;">
-                    <svg class="status-icon experimental" onclick="toggleBubble('${bubbleId}', event)" viewBox="${warningIcon.viewBox}">
-                        <path fill="currentColor" d="${warningIcon.d}"/>
-                    </svg>
+                <div class="status-icon-wrapper beer">
+                    <button type="button" class="status-icon-button icon-button transparent circle" aria-label="${t('features.tooltipExperimental')}" onclick="toggleBubble('${bubbleId}', event)">
+                        <svg class="status-icon experimental" viewBox="${warningIcon.viewBox}">
+                            <path fill="currentColor" d="${warningIcon.d}"/>
+                        </svg>
+                    </button>
                     <div id="${bubbleId}" class="status-bubble hidden">
                         ${t('features.tooltipExperimental')}
                     </div>
