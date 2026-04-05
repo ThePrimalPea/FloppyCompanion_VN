@@ -399,7 +399,9 @@ function renderFeatures(schema, procCmdline) {
             const optionsHtml = visibleOptions.map(opt => {
                 const isSelected = (currentVal === opt.val);
                 const selectedClass = isSelected ? 'selected' : '';
-                const expBadge = opt.experimental ? `<span class="experimental-badge" title="${t('features.tooltipExperimental')}"><svg viewBox="${warningIcon.viewBox}" width="16" height="16"><path fill="#F44336" d="${warningIcon.d}"/></svg></span>` : '';
+                const expBadge = opt.experimental
+                    ? `<span class="experimental-badge" title="${t('features.tooltipExperimental')}"><svg class="experimental-badge-icon" viewBox="${warningIcon.viewBox}" width="16" height="16"><path fill="currentColor" d="${warningIcon.d}"/></svg></span>`
+                    : '';
 
                 return `
                 <div class="option-item ${selectedClass} ${isReadOnly ? 'readonly' : ''}"
@@ -431,7 +433,12 @@ function renderFeatures(schema, procCmdline) {
         } else if (currentVal === '0') {
             displayValText += ' (' + (t('features.optionDisabled')) + ')';
         }
-        const currentValueHtml = `<div class="current-value-display">${t('features.currentLabel')} ${displayValText}</div>`;
+        const currentValueHtml = `
+            <div class="current-value-display">
+                <span class="current-value-label">${t('features.currentLabel')}</span>
+                <span class="current-value-text">${displayValText}</span>
+            </div>
+        `;
 
         // Render
         el.innerHTML = `
