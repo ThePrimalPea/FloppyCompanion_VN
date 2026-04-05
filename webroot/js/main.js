@@ -87,9 +87,13 @@ async function init() {
 
         langMenu.innerHTML = '';
         I18N.availableLanguages.forEach(lang => {
-            const item = document.createElement('div');
+            const item = document.createElement('li');
             item.className = 'dropdown-item';
+            const isCurrent = I18N.currentLang === lang.code;
+            if (isCurrent) item.classList.add('active');
             item.dataset.lang = lang.code;
+            item.setAttribute('role', 'menuitemradio');
+            item.setAttribute('aria-checked', String(isCurrent));
             item.textContent = lang.name;
             langMenu.appendChild(item);
         });
@@ -111,20 +115,12 @@ async function init() {
 
         langBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            const isVisible = langMenu.classList.contains('visible');
-            if (isVisible) {
-                langMenu.classList.remove('visible');
-                setTimeout(() => langMenu.classList.add('hidden'), 200);
-            } else {
-                langMenu.classList.remove('hidden');
-                setTimeout(() => langMenu.classList.add('visible'), 10);
-            }
+            langMenu.classList.toggle('active');
         });
 
         document.addEventListener('click', () => {
-            if (langMenu.classList.contains('visible')) {
-                langMenu.classList.remove('visible');
-                setTimeout(() => langMenu.classList.add('hidden'), 200);
+            if (langMenu.classList.contains('active')) {
+                langMenu.classList.remove('active');
             }
         });
 
@@ -137,9 +133,9 @@ async function init() {
             const lang = item.dataset.lang;
             if (lang && window.I18N) {
                 await I18N.setLanguage(lang);
+                populateLanguageMenu();
             }
-            langMenu.classList.remove('visible');
-            setTimeout(() => langMenu.classList.add('hidden'), 200);
+            langMenu.classList.remove('active');
         });
     }
 
@@ -211,21 +207,13 @@ async function init() {
         // Toggle dropdown on button click
         rebootBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            const isVisible = rebootMenu.classList.contains('visible');
-            if (isVisible) {
-                rebootMenu.classList.remove('visible');
-                setTimeout(() => rebootMenu.classList.add('hidden'), 200);
-            } else {
-                rebootMenu.classList.remove('hidden');
-                setTimeout(() => rebootMenu.classList.add('visible'), 10);
-            }
+            rebootMenu.classList.toggle('active');
         });
 
         // Close dropdown when clicking outside
         document.addEventListener('click', () => {
-            if (rebootMenu.classList.contains('visible')) {
-                rebootMenu.classList.remove('visible');
-                setTimeout(() => rebootMenu.classList.add('hidden'), 200);
+            if (rebootMenu.classList.contains('active')) {
+                rebootMenu.classList.remove('active');
             }
         });
 
@@ -248,8 +236,7 @@ async function init() {
                 if (!command) return;
 
                 // Close dropdown
-                rebootMenu.classList.remove('visible');
-                setTimeout(() => rebootMenu.classList.add('hidden'), 200);
+                rebootMenu.classList.remove('active');
 
                 // Only confirm if there are pending changes
                 const actionName = item.textContent;

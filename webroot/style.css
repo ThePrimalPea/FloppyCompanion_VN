@@ -235,7 +235,11 @@ body.theme-detect-anim .nav-item .icon {
 }
 
 /* Bridge the existing MD3 token set into BeerCSS variable names. */
-body {
+body,
+body.light,
+body.dark,
+.beer,
+beer-css {
     --font: 'Roboto', sans-serif;
     --primary: var(--md-sys-color-primary);
     --on-primary: var(--md-sys-color-on-primary);
@@ -521,6 +525,7 @@ body {
     width: 40px;
     /* Size of icon-button */
     height: 40px;
+    overflow: visible;
 }
 
 /* Header action items stack in the same position */
@@ -533,6 +538,7 @@ body {
 /* Ensure dropdown menus position relative to their container, not header-actions */
 .header-actions .dropdown-container {
     position: absolute;
+    overflow: visible;
 }
 
 .icon-button {
@@ -564,44 +570,25 @@ body {
 
 .dropdown-menu {
     position: absolute;
-    top: 100%;
-    inset-inline-end: 0;
+    top: auto !important;
+    bottom: 0 !important;
+    inset-inline-end: 0 !important;
+    inset-inline-start: auto !important;
     min-width: 200px;
-    background-color: var(--md-sys-color-surface-container-high);
-    border-radius: var(--md-sys-shape-corner-medium);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    max-width: min(280px, calc(100vw - 32px));
     z-index: 200;
-    overflow: hidden;
-    opacity: 0;
-    transform: translateY(-8px);
-    transition: opacity 0.2s, transform 0.2s;
-    pointer-events: none;
+    overflow-x: hidden;
+    overflow-y: auto;
+    transform-origin: top right;
+    transform: scale(0.96) translateY(100%);
 }
 
-.dropdown-menu.visible {
-    opacity: 1;
-    transform: translateY(0);
-    pointer-events: auto;
-}
-
-.dropdown-menu.hidden {
-    display: none;
+.dropdown-menu.active {
+    transform: scale(1) translateY(calc(100% + 8px)) !important;
 }
 
 .dropdown-item {
-    padding: 12px 16px;
-    font-size: 14px;
-    color: var(--md-sys-color-on-surface);
-    cursor: pointer;
-    transition: background-color 0.15s;
-}
-
-.dropdown-item:hover {
-    background-color: var(--md-sys-color-surface-variant);
-}
-
-.dropdown-item:active {
-    background-color: var(--md-sys-color-primary-container);
+    color: inherit;
 }
 
 .dropdown-item.hidden {
