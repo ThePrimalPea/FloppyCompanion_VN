@@ -931,17 +931,12 @@ body {
     bottom: calc(92px + env(safe-area-inset-bottom, 0px));
     inset-inline-start: 50%;
     transform: translateX(-50%) translateY(100px); /* Center X remains physical as translate is axis-based */
-    background:
-        linear-gradient(180deg,
-            color-mix(in srgb, var(--md-sys-color-surface-container-highest) 78%, var(--md-sys-color-surface) 22%) 0%,
-            color-mix(in srgb, var(--md-sys-color-surface-container-high) 90%, var(--md-sys-color-surface) 10%) 100%);
+    background-color: var(--md-sys-color-surface-container-high);
     color: var(--md-sys-color-on-surface);
     padding: 13px 18px;
     border-radius: 18px;
     border: 1px solid color-mix(in srgb, var(--md-sys-color-outline-variant) 76%, transparent);
-    box-shadow:
-        0 1px 0 rgba(255, 255, 255, 0.05) inset,
-        0 12px 30px rgba(0, 0, 0, 0.22);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.20);
     font-size: 14px;
     font-weight: 500;
     line-height: 1.35;
@@ -958,10 +953,7 @@ body {
 }
 
 .toast.error {
-    background:
-        linear-gradient(180deg,
-            color-mix(in srgb, var(--error-container) 92%, var(--md-sys-color-surface) 8%) 0%,
-            color-mix(in srgb, var(--error-container) 84%, var(--md-sys-color-surface) 16%) 100%);
+    background-color: var(--error-container);
     color: var(--on-error-container);
     border-color: color-mix(in srgb, var(--error) 32%, transparent);
 }
@@ -969,39 +961,15 @@ body {
 /* --- Preset Bar Styles --- */
 
 .preset-bar {
-    position: relative;
-    overflow: hidden;
     display: flex;
     flex-direction: column;
     gap: 14px;
     padding: 18px;
-    background:
-        linear-gradient(180deg,
-            color-mix(in srgb, var(--md-sys-color-surface-container-high) 74%, var(--md-sys-color-surface) 26%) 0%,
-            color-mix(in srgb, var(--md-sys-color-surface-container) 88%, var(--md-sys-color-surface) 12%) 100%);
+    background-color: var(--md-sys-color-surface-container);
     border: 1px solid color-mix(in srgb, var(--md-sys-color-outline-variant) 82%, transparent);
     border-radius: 28px;
-    box-shadow:
-        0 1px 0 rgba(255, 255, 255, 0.04) inset,
-        0 10px 22px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.07);
     margin-bottom: 22px;
-}
-
-.preset-bar::before {
-    content: "";
-    position: absolute;
-    inset: 0 0 auto 0;
-    block-size: 76px;
-    background: linear-gradient(180deg,
-        color-mix(in srgb, var(--md-sys-color-primary) 9%, transparent) 0%,
-        transparent 100%);
-    opacity: 0.26;
-    pointer-events: none;
-}
-
-.preset-bar > * {
-    position: relative;
-    z-index: 1;
 }
 
 .preset-selector-row {
@@ -1012,7 +980,7 @@ body {
 
 .preset-selector-field {
     --_input: 2.6rem;
-    --_background: color-mix(in srgb, var(--surface-container-high) 92%, var(--background) 8%);
+    --_background: var(--surface-container-high);
     flex: 1 1 auto;
     min-width: 0;
 }
@@ -1336,12 +1304,7 @@ body {
 
 /* Info/Warning Notice */
 .info-notice {
-    position: relative;
-    overflow: hidden;
-    background:
-        linear-gradient(180deg,
-            color-mix(in srgb, var(--md-sys-color-primary-container) 24%, var(--md-sys-color-surface-container-high) 76%) 0%,
-            color-mix(in srgb, var(--md-sys-color-surface-container-high) 92%, var(--md-sys-color-surface) 8%) 100%);
+    background-color: var(--md-sys-color-surface-container-high);
     border: 1px solid color-mix(in srgb, var(--md-sys-color-outline-variant) 74%, transparent);
     color: var(--md-sys-color-on-surface);
     padding: 14px;
@@ -1351,19 +1314,6 @@ body {
     display: flex;
     align-items: flex-start;
     gap: 12px;
-    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset;
-}
-
-.info-notice::before {
-    content: "";
-    position: absolute;
-    inset: 0 0 auto 0;
-    block-size: 56px;
-    background: linear-gradient(180deg,
-        color-mix(in srgb, var(--md-sys-color-primary) 10%, transparent) 0%,
-        transparent 100%);
-    opacity: 0.26;
-    pointer-events: none;
 }
 
 .info-notice.hidden {
@@ -1372,16 +1322,11 @@ body {
 }
 
 .info-notice.warning {
-    background:
-        linear-gradient(180deg,
-            color-mix(in srgb, var(--error-container) 28%, var(--md-sys-color-surface-container-high) 72%) 0%,
-            color-mix(in srgb, var(--md-sys-color-surface-container-high) 90%, var(--md-sys-color-surface) 10%) 100%);
+    background-color: color-mix(in srgb, var(--error-container) 20%, var(--md-sys-color-surface-container-high) 80%);
     border-color: color-mix(in srgb, var(--error) 24%, var(--md-sys-color-outline-variant) 76%);
 }
 
 .info-notice .notice-icon {
-    position: relative;
-    z-index: 1;
     width: 18px;
     height: 18px;
     min-width: 18px;
@@ -1401,8 +1346,6 @@ body {
 }
 
 .info-notice .notice-content {
-    position: relative;
-    z-index: 1;
     flex-grow: 1;
     line-height: 1.45;
     color: var(--md-sys-color-on-surface);
@@ -1984,34 +1927,10 @@ body {
 }
 
 .section-shell {
-    overflow: hidden;
-    background:
-        linear-gradient(180deg,
-            color-mix(in srgb, var(--md-sys-color-surface-container-high) 72%, var(--md-sys-color-surface) 28%) 0%,
-            color-mix(in srgb, var(--md-sys-color-surface-container) 88%, var(--md-sys-color-surface) 12%) 100%);
+    overflow: visible;
+    background-color: var(--md-sys-color-surface-container);
     border-color: color-mix(in srgb, var(--md-sys-color-outline-variant) 84%, transparent);
-    box-shadow:
-        0 1px 0 rgba(255, 255, 255, 0.04) inset,
-        0 12px 26px rgba(0, 0, 0, 0.10);
-}
-
-.section-shell::before {
-    content: "";
-    position: absolute;
-    inset: 0 0 auto 0;
-    block-size: 96px;
-    background:
-        linear-gradient(180deg,
-            color-mix(in srgb, var(--md-sys-color-primary) 10%, transparent) 0%,
-            transparent 100%);
-    opacity: 0.24;
-    pointer-events: none;
-}
-
-.section-shell > .card-header,
-.section-shell > .card-content {
-    position: relative;
-    z-index: 1;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
 }
 
 .section-shell .card-header > .icon-svg {
@@ -2020,15 +1939,14 @@ body {
     padding: 8px;
     box-sizing: content-box;
     border-radius: 14px;
-    background-color: color-mix(in srgb, var(--md-sys-color-primary-container) 84%, var(--md-sys-color-surface-container-high) 16%);
+    background-color: var(--md-sys-color-primary-container);
     color: var(--md-sys-color-on-primary-container);
     fill: currentColor;
     flex-shrink: 0;
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--md-sys-color-outline-variant) 24%, transparent);
 }
 
 .section-shell .card-header.error > .icon-svg {
-    background-color: color-mix(in srgb, var(--md-sys-color-error-container) 92%, var(--md-sys-color-surface-container-high) 8%);
+    background-color: var(--error-container);
     color: var(--on-error-container);
 }
 
@@ -2368,36 +2286,14 @@ body {
 
 /* --- Experimental Toggle (M3 Switch) --- */
 .experimental-switch-container {
-    position: relative;
-    overflow: hidden;
     margin-top: 16px;
     margin-bottom: 0;
     padding: 16px 16px 16px 18px;
     padding-inline-end: 8px;
-    background:
-        linear-gradient(180deg,
-            color-mix(in srgb, var(--md-sys-color-surface-container-high) 78%, var(--md-sys-color-surface) 22%) 0%,
-            color-mix(in srgb, var(--md-sys-color-surface-container) 90%, var(--md-sys-color-surface) 10%) 100%);
+    background-color: var(--md-sys-color-surface-container-high);
     border: 1px solid color-mix(in srgb, var(--md-sys-color-outline-variant) 76%, transparent);
     border-radius: 24px;
-    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset;
-}
-
-.experimental-switch-container::before {
-    content: "";
-    position: absolute;
-    inset: 0 0 auto 0;
-    block-size: 56px;
-    background: linear-gradient(180deg,
-        color-mix(in srgb, var(--md-sys-color-primary) 9%, transparent) 0%,
-        transparent 100%);
-    opacity: 0.22;
-    pointer-events: none;
-}
-
-.experimental-switch-container > * {
-    position: relative;
-    z-index: 1;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
 }
 
 .m3-switch-label {
