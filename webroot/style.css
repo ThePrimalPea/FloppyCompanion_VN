@@ -798,6 +798,10 @@ body {
     margin-bottom: 0;
 }
 
+.action-row.beer {
+    gap: 10px;
+}
+
 .action-button {
     display: flex;
     align-items: center;
@@ -812,10 +816,42 @@ body {
     transition: background-color 0.2s, transform 0.1s;
 }
 
+.action-row.beer .action-button {
+    flex: 0 0 auto;
+    inline-size: auto;
+    max-inline-size: 100%;
+    min-block-size: 44px;
+    justify-content: flex-start;
+    gap: 10px;
+    padding-inline: 20px;
+    border-radius: 999px !important;
+    background-color: var(--md-sys-color-surface-container-high);
+    color: var(--md-sys-color-on-surface);
+    box-shadow: none;
+}
+
+.action-row.beer .action-button .icon-svg-small {
+    margin-inline-end: 0;
+    flex-shrink: 0;
+}
+
+.action-row.beer .action-button span {
+    white-space: nowrap;
+}
+
+.action-row.beer .action-button:hover,
+.action-row.beer .action-button:focus-visible {
+    background-color: var(--md-sys-color-surface-container-highest);
+}
+
 .action-button:active {
     transform: scale(0.97);
     background-color: var(--md-sys-color-outline);
     color: var(--md-sys-color-on-surface);
+}
+
+.action-row.beer .action-button:active {
+    background-color: var(--md-sys-color-surface-container-highest);
 }
 
 .info-button {
