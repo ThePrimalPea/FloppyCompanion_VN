@@ -237,8 +237,23 @@
         const height = canvas.getBoundingClientRect().height;
         const padding = 4;
         const graphHeight = height - padding * 2;
+        const gridColor = getCssColor('--md-sys-color-outline-variant', '#666666');
+        const gridRgb = colorToRgb(gridColor);
 
         ctx.clearRect(0, 0, width, height);
+
+        // Draw subtle horizontal guides so the graph has an obvious ceiling/floor.
+        ctx.save();
+        ctx.strokeStyle = `rgba(${gridRgb.r}, ${gridRgb.g}, ${gridRgb.b}, 0.42)`;
+        ctx.lineWidth = 1;
+        [0, 0.5, 1].forEach((ratio) => {
+            const y = padding + graphHeight * ratio;
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(width, y);
+            ctx.stroke();
+        });
+        ctx.restore();
 
         // Find valid data range (non-null values from the right)
         let firstValidIdx = history.findIndex(v => v !== null);

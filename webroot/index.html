@@ -1372,7 +1372,13 @@
                         <div class="card-content">
                             <div class="monitor-graph-block">
                                 <div class="monitor-graph-title" data-i18n="monitor.memory.usedMemory">Used Memory</div>
-                                <canvas id="monitor-mem-graph" class="monitor-graph" aria-label="Memory usage graph"></canvas>
+                                <div class="monitor-graph-frame">
+                                    <canvas id="monitor-mem-graph" class="monitor-graph" aria-label="Memory usage graph"></canvas>
+                                    <div class="monitor-graph-scale" aria-hidden="true">
+                                        <span class="monitor-graph-scale-top">100%</span>
+                                        <span class="monitor-graph-scale-bottom">0%</span>
+                                    </div>
+                                </div>
                                 <div class="monitor-graph-meta">
                                     <span id="monitor-mem-used" class="monitor-pill">--</span>
                                     <span id="monitor-mem-total" class="monitor-pill">--</span>
@@ -1381,7 +1387,13 @@
 
                             <div class="monitor-graph-block">
                                 <div class="monitor-graph-title" data-i18n="monitor.memory.usedSwap">Swap (ZRAM / swapfile)</div>
-                                <canvas id="monitor-swap-graph" class="monitor-graph" aria-label="Swap usage graph"></canvas>
+                                <div class="monitor-graph-frame">
+                                    <canvas id="monitor-swap-graph" class="monitor-graph" aria-label="Swap usage graph"></canvas>
+                                    <div class="monitor-graph-scale" aria-hidden="true">
+                                        <span class="monitor-graph-scale-top">100%</span>
+                                        <span class="monitor-graph-scale-bottom">0%</span>
+                                    </div>
+                                </div>
                                 <div class="monitor-graph-meta">
                                     <span id="monitor-swap-used" class="monitor-pill">--</span>
                                     <span id="monitor-swap-total" class="monitor-pill">--</span>

@@ -2335,6 +2335,28 @@ beer-css.tweak-slider-scope .tweak-beer-slider:has(> input.beer-slider-input:dis
     border-radius: 8px;
 }
 
+.monitor-graph-frame {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: stretch;
+    column-gap: 10px;
+}
+
+.monitor-graph-scale {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-end;
+    min-width: 2.25rem;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1;
+    color: var(--md-sys-color-on-surface-variant);
+    opacity: 0.9;
+    padding-block: 4px;
+    user-select: none;
+}
+
 .monitor-graph-meta {
     display: flex;
     justify-content: space-between;
