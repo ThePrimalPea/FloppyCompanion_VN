@@ -1076,18 +1076,27 @@ body {
 /* --- Tweaks Section Styles --- */
 
 .section-title {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--md-sys-color-primary);
+    display: inline-flex;
+    align-items: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: color-mix(in srgb, var(--md-sys-color-primary) 82%, var(--md-sys-color-on-surface-variant) 18%);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 12px;
-    margin-top: 8px;
+    letter-spacing: 0.08em;
+    margin: 8px 4px 14px;
+}
+
+.section-title:first-child {
+    margin-top: 0;
 }
 
 .tweak-card {
-    margin-bottom: 16px;
+    margin-bottom: 18px;
     position: relative;
+}
+
+.tweak-card .card-header {
+    padding-inline-end: 76px;
 }
 
 .tweak-toggle-row {
@@ -1873,11 +1882,61 @@ body {
 
 /* Cards (Restored) */
 .card {
+    position: relative;
     background-color: var(--md-sys-color-surface);
-    border: 1px solid var(--md-sys-color-outline);
-    border-radius: var(--md-sys-shape-corner-large);
-    padding: 16px;
-    margin-bottom: 16px;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: 28px;
+    padding: 18px;
+    margin-bottom: 18px;
+}
+
+.section-shell {
+    overflow: hidden;
+    background:
+        linear-gradient(180deg,
+            color-mix(in srgb, var(--md-sys-color-surface-container-high) 72%, var(--md-sys-color-surface) 28%) 0%,
+            color-mix(in srgb, var(--md-sys-color-surface-container) 88%, var(--md-sys-color-surface) 12%) 100%);
+    border-color: color-mix(in srgb, var(--md-sys-color-outline-variant) 84%, transparent);
+    box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.04) inset,
+        0 12px 26px rgba(0, 0, 0, 0.10);
+}
+
+.section-shell::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    block-size: 96px;
+    background:
+        linear-gradient(180deg,
+            color-mix(in srgb, var(--md-sys-color-primary) 10%, transparent) 0%,
+            transparent 100%);
+    opacity: 0.24;
+    pointer-events: none;
+}
+
+.section-shell > .card-header,
+.section-shell > .card-content {
+    position: relative;
+    z-index: 1;
+}
+
+.section-shell .card-header > .icon-svg {
+    width: 18px;
+    height: 18px;
+    padding: 8px;
+    box-sizing: content-box;
+    border-radius: 14px;
+    background-color: color-mix(in srgb, var(--md-sys-color-primary-container) 84%, var(--md-sys-color-surface-container-high) 16%);
+    color: var(--md-sys-color-on-primary-container);
+    fill: currentColor;
+    flex-shrink: 0;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--md-sys-color-outline-variant) 24%, transparent);
+}
+
+.section-shell .card-header.error > .icon-svg {
+    background-color: color-mix(in srgb, var(--md-sys-color-error-container) 92%, var(--md-sys-color-surface-container-high) 8%);
+    color: var(--on-error-container);
 }
 
 /* --- Monitor (Memory) --- */
@@ -2077,22 +2136,25 @@ body {
     display: flex;
     position: relative;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 12px;
-    padding-inline-end: 84px;
-    color: var(--md-sys-color-primary);
+    gap: 10px;
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    padding-inline-end: 0;
+    color: var(--md-sys-color-on-surface-variant);
 }
 
 .card-header .card-title {
-    font-size: 18px;
-    font-weight: 500;
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    color: inherit;
 }
 
 .card-title-wrap {
     display: flex;
     align-items: center;
     flex: 1 1 auto;
-    gap: 8px;
+    gap: 6px;
     min-width: 0;
 }
 
@@ -2140,15 +2202,12 @@ body {
 }
 
 .card-header {
-    font-size: 14px;
-    font-weight: 600;
+    font-size: 13px;
+    font-weight: 700;
     color: var(--md-sys-color-on-surface-variant);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--md-sys-color-outline-variant);
-    margin-bottom: 12px;
-    padding-inline-end: 44px;
+    letter-spacing: 0.08em;
+    border-bottom: 1px solid color-mix(in srgb, var(--md-sys-color-outline-variant) 72%, transparent);
 }
 
 .link-list {
