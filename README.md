@@ -15,6 +15,8 @@ FloppyCompanion is a KernelSU WebUI module for configuring FloppyKernel variants
 - FloppyKernel installed:
 
         - Floppy1280: v6.2+ supported
+
+        - Floppy2100: supported
         
         - FloppyTrinketMi: v2.0b+ required
 
@@ -22,7 +24,7 @@ Note: If you spoof the kernel version (SusFS, BRENE), feature detection and patc
 
 ## How it works
 - Reads current kernel cmdline and sysfs state for feature/tweak status.
-- Applies feature toggles by patching the boot image (kernel cmdline or header).
+- Applies feature toggles by patching the boot image (kernel cmdline, kernel tokens, or header).
 - Applies tweaks via backend scripts that write to sysfs and persist configs.
 - Reapplies everything at boot through service scripts.
 
@@ -72,6 +74,7 @@ The module zip will be emitted by the build script in the repo directory.
 
 ## Kernel repositories
 - https://github.com/FlopKernel-Series/flop_s5e8825_kernel
+- https://github.com/FlopKernel-Series/flop_exynos2100_kernel
 - https://github.com/FlopKernel-Series/flop_trinket-mi_kernel
 
 ## Language support
@@ -81,7 +84,9 @@ FloppyCompanion currently supports:
 - Turkish
 - Ukrainian
 - Vietnamese
+- Russian
 - Arabic
+- Azerbaijani
 
 Translation guide: docs/TRANSLATION_GUIDE.md
 
@@ -98,4 +103,5 @@ GNU GPLv3
 
 ## Links
 - https://t.me/Floppy1280
+- https://t.me/Floppy2100
 - https://t.me/FloppyTrinketMi
