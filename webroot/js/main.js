@@ -594,6 +594,11 @@ async function init() {
             ];
         } else if (devInfo.is2100) {
             kernelName = 'Floppy2100';
+            kernelLinks = [
+                { icon: 'github', text: 'Floppy2100 repository', url: 'https://github.com/FlopKernel-Series/flop_exynos2100_kernel' },
+                { icon: 'telegram', text: 'Floppy2100 channel', url: 'https://t.me/Floppy2100' },
+                { icon: 'telegram', text: 'Floppy2100 group', url: 'https://t.me/Floppy2100_Chat' }
+            ];
         } else if (devInfo.isTrinketMi) {
             kernelName = 'FloppyTrinketMi';
             kernelLinks = [
