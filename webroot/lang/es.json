@@ -212,6 +212,14 @@
             "desc2": "Frecuencia de throttle personalizada. Establece tu propio límite en KHz.",
             "desc3": "Throttling menos agresivo. Frecuencias: 2400 → 2288 → 2208 MHz. Corre más caliente."
         },
+        "thermalControl": {
+            "title": "Control Térmico",
+            "little": "Little",
+            "big": "Big",
+            "prime": "Prime",
+            "g3d": "G3D",
+            "performanceMode": "Modo Rendimiento"
+        },
         "charging": {
             "title": "Carga",
             "bypass": "Ignorar Carga (Bypass)",
@@ -302,6 +310,8 @@
             "display": "HBM aumenta el brillo máximo bajo el sol. CABC ajusta la luz de fondo según el contenido para ahorrar energía.",
             "ioScheduler": "Algoritmo usado para ordenar y fusionar peticiones de E/S. Afecta el rendimiento y latencia del almacenamiento.",
             "thermal": "Controla el throttling de la CPU del clúster Big. Modo 3 es rendimiento agresivo, Modo 1 es tipo stock, Modo 0 desactiva el throttling (¡peligroso!).",
+            "thermalControl": "Ajusta los offsets de los trips térmicos de CPU y G3D según los valores predeterminados capturados del kernel. Valores más altos relajan el throttling; valores más bajos lo hacen más agresivo. Estos offsets se capturan y se aplican después de que termine de arrancar el sistema.",
+            "thermalControlPerformance": "Establece todos los offsets térmicos en 0°C, lo que significa que se usan los valores de throttling predeterminados del ECT.",
             "undervolt": "Reduce el voltaje para ahorrar energía y calor. No recomendado con Overclocking (Modo Unlocked).",
             "blockEd3": "Desactiva Ear Detect Modo 3, que evita que la pantalla baje su tasa de refresco cuando el sensor de proximidad virtual está activo. También hace el sensor de proximidad menos sensible.",
             "gpuClkLock": "Cuando está habilitado, evita que se cambien las frecuencias min/max de la GPU. Útil para bloquear los relojes de la GPU en un rango específico.",
@@ -320,7 +330,9 @@
         "description": "Módulo complementario para configurar FloppyKernel.",
         "moduleLinks": "Enlaces del módulo",
         "projectCredits": "Créditos del proyecto",
+        "thirdPartyCredits": "Créditos de terceros",
         "roleFlopster": "Desarrollador del módulo y FloppyKernel",
+        "roleBeerCss": "Framework de interfaz MD3",
         "kernelLinksTemplate": "Enlaces de {name}",
         "translationCredits": "Créditos de traducción",
         "repository": "repositorio",
@@ -371,6 +383,8 @@
         "readonlyBody": "<p>Esto permite modificar características marcadas como solo lectura.</p><p><strong>Usar solo para pruebas. Los cambios NO se guardarán.</strong></p>",
         "applyChangesTitle": "¿Aplicar cambios?",
         "applyChangesBody": "<p>Esto flasheará el kernel con la característica modificada a tu dispositivo.</p><p><strong>Esto implica riesgos.</strong></p>",
+        "thermalControlPerformanceTitle": "¿Activar Modo Rendimiento?",
+        "thermalControlPerformanceBody": "<p>Esto establece todos los offsets térmicos en <strong>0°C</strong>, usando los valores de throttling predeterminados del ECT.</p><p><strong>Esto puede causar un sobrecalentamiento importante.</strong></p>",
         "rebootPendingBody": "<p>¿Estás seguro de que quieres {action}?</p><p><strong>¡Tienes cambios sin aplicar que se perderán!</strong></p>",
         "processingKernel": "Procesando Kernel..."
     }

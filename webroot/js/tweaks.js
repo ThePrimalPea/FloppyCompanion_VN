@@ -181,6 +181,7 @@ window.reloadTweakState = async function (tweakId) {
         lmkd: window.loadLmkdState,
         iosched: window.loadIoSchedulerState,
         thermal: window.loadThermalState,
+        thermal_control: window.loadThermalControlState,
         undervolt: window.loadUndervoltState,
         misc: window.loadMiscState,
         exynos: window.loadExynosState,
@@ -216,6 +217,7 @@ window.clearTweakPersistence = async function (tweakId) {
         lmkd: 'lmkd.conf',
         iosched: 'iosched.conf',
         thermal: 'thermal.conf',
+        thermal_control: 'thermal_control.conf',
         undervolt: 'undervolt.conf',
         soundcontrol: 'soundcontrol.conf',
         charging: 'charging.conf',
@@ -681,6 +683,44 @@ window.getTweakTextInputState = function (key, pending = {}, saved = {}, referen
     return { placeholder, value };
 };
 
+window.resolveBlankTweakFields = function (sourceState = {}, fieldConfig = {}, current = {}, defaults = {}) {
+    const resolvedState = { ...sourceState };
+
+    Object.entries(fieldConfig || {}).forEach(([key, rawConfig]) => {
+        const config = typeof rawConfig === 'string' ? { id: rawConfig } : (rawConfig || {});
+        if (!config.id) return;
+
+        const input = document.getElementById(config.id);
+        if (!input) return;
+
+        const rawValue = String(input.value ?? '');
+        const trimmedValue = rawValue.trim();
+        const emptyValues = Array.isArray(config.emptyValues) ? config.emptyValues : [''];
+        const isEmpty = emptyValues.some((emptyValue) => rawValue === emptyValue || trimmedValue === emptyValue);
+
+        if (isEmpty) {
+            resolvedState[key] = window.getTweakDefaultValue(
+                key,
+                current,
+                defaults,
+                Object.prototype.hasOwnProperty.call(config, 'fallback') ? config.fallback : ''
+            );
+            return;
+        }
+
+        if (typeof config.serialize === 'function') {
+            resolvedState[key] = String(config.serialize(rawValue, resolvedState[key]));
+            return;
+        }
+
+        if (!Object.prototype.hasOwnProperty.call(resolvedState, key) || resolvedState[key] === '') {
+            resolvedState[key] = rawValue;
+        }
+    });
+
+    return resolvedState;
+};
+
 window.setPendingIndicator = function (indicatorId, hasPending) {
     const indicator = document.getElementById(indicatorId);
     if (!indicator) return;
@@ -751,6 +791,7 @@ function initPlatformTweaks() {
 
         // Initialize all platform tweaks - each will show/hide its own card
         if (typeof initThermalTweak === 'function') initThermalTweak();
+        if (typeof initThermalControlTweak === 'function') initThermalControlTweak();
         if (typeof initUndervoltTweak === 'function') initUndervoltTweak();
         if (typeof initMiscTweak === 'function') initMiscTweak();
         if (typeof initExynosTweak === 'function') initExynosTweak();
