@@ -29,13 +29,19 @@ const I18N = {
             }
 
             if (data && Array.isArray(data.languages) && data.languages.length > 0) {
-                this.availableLanguages = data.languages
+                const unique = new Map();
+                data.languages
                     .filter(lang => lang && typeof lang.code === 'string' && typeof lang.name === 'string')
-                    .map(lang => ({
-                        code: lang.code,
-                        name: lang.name,
-                        dir: lang.dir || this.getDir(lang.code)
-                    }));
+                    .forEach((lang) => {
+                        const normalized = this.normalizeLanguageCode(lang.code);
+                        if (!normalized || unique.has(normalized)) return;
+                        unique.set(normalized, {
+                            code: normalized,
+                            name: lang.name,
+                            dir: lang.dir || this.getDir(normalized)
+                        });
+                    });
+                this.availableLanguages = Array.from(unique.values());
             }
         } catch (e) {
             console.error('Failed to load language manifest:', e);
