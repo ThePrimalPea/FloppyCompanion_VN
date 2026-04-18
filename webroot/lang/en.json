@@ -386,6 +386,10 @@
         "applyChangesBody": "<p>This will flash the feature-patched kernel to your device.</p><p><strong>This involves risks.</strong></p>",
         "thermalControlPerformanceTitle": "Enable Performance mode?",
         "thermalControlPerformanceBody": "<p>This sets all thermal offsets to <strong>0°C</strong>, using the ECT's default throttling values.</p><p><strong>This can cause significant overheating.</strong></p>",
+        "throttlersProtectionOffsetsEnableTitle": "Set recommended thermal offsets?",
+        "throttlersProtectionOffsetsEnableBody": "<p>Throttling Protection was enabled. Recommended offsets help avoid overheating because the ROM can no longer throttle the SoC.</p><p>This will set Big and Prime to <strong>-10°C</strong>, Little to <strong>-8°C</strong>, and G3D to <strong>-13°C</strong>.</p>",
+        "throttlersProtectionOffsetsDisableTitle": "Reset thermal offsets to 0°C?",
+        "throttlersProtectionOffsetsDisableBody": "<p>Throttling Protection was disabled. Resetting all thermal offsets to <strong>0°C</strong> is recommended because the ROM will manage throttling again.</p>",
         "rebootPendingBody": "<p>Are you sure you want to {action}?</p><p><strong>You have unapplied changes that will be lost!</strong></p>",
         "processingKernel": "Processing Kernel..."
     }

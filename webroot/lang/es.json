@@ -387,6 +387,10 @@
         "applyChangesBody": "<p>Esto flasheará el kernel con la característica modificada a tu dispositivo.</p><p><strong>Esto implica riesgos.</strong></p>",
         "thermalControlPerformanceTitle": "¿Activar Modo Rendimiento?",
         "thermalControlPerformanceBody": "<p>Esto establece todos los offsets térmicos en <strong>0°C</strong>, usando los valores de throttling predeterminados del ECT.</p><p><strong>Esto puede causar un sobrecalentamiento importante.</strong></p>",
+        "throttlersProtectionOffsetsEnableTitle": "¿Aplicar offsets térmicos recomendados?",
+        "throttlersProtectionOffsetsEnableBody": "<p>Se activó Protección de Throttling. Los offsets recomendados ayudan a evitar el sobrecalentamiento porque la ROM ya no puede limitar el SoC.</p><p>Esto establecerá Big y Prime en <strong>-10°C</strong>, Little en <strong>-8°C</strong> y G3D en <strong>-13°C</strong>.</p>",
+        "throttlersProtectionOffsetsDisableTitle": "¿Restablecer los offsets térmicos a 0°C?",
+        "throttlersProtectionOffsetsDisableBody": "<p>Se desactivó Protección de Throttling. Se recomienda restablecer todos los offsets térmicos a <strong>0°C</strong> porque la ROM volverá a gestionar el throttling.</p>",
         "rebootPendingBody": "<p>¿Estás seguro de que quieres {action}?</p><p><strong>¡Tienes cambios sin aplicar que se perderán!</strong></p>",
         "processingKernel": "Procesando Kernel..."
     }

@@ -30,6 +30,78 @@ function translateTextOrFallback(key, fallback) {
     return fallback;
 }
 
+function isMiscToggleDisabled(key) {
+    if (key !== 'gpu_unlock' && key !== 'throttlers_protection') return false;
+
+    const switchId = key === 'gpu_unlock' ? 'misc-gpuunlock-switch' : 'misc-throttlersprotection-switch';
+    const toggleSwitch = document.getElementById(switchId);
+    return !!(toggleSwitch && toggleSwitch.disabled);
+}
+
+function getThrottlersProtectionRecommendation(action) {
+    if (window.KERNEL_NAME !== 'Floppy2100') return null;
+    if (!isMiscKeySupported('throttlers_protection') || isMiscToggleDisabled('throttlers_protection')) return null;
+
+    const pendingValue = String(miscPendingState.throttlers_protection || '0');
+    const currentValue = String(miscCurrentState.throttlers_protection || '0');
+    const referenceValue = String(miscReferenceState.throttlers_protection || '0');
+
+    let changed = false;
+    if (action === 'save') {
+        changed = pendingValue !== referenceValue;
+    } else if (action === 'apply') {
+        changed = pendingValue !== currentValue;
+    } else if (action === 'save_apply') {
+        changed = pendingValue !== referenceValue || pendingValue !== currentValue;
+    }
+
+    if (!changed) return null;
+    return pendingValue === '1' ? 'enable' : 'disable';
+}
+
+function getRecommendationConfirmText(action) {
+    if (action === 'save') {
+        return translateTextOrFallback('tweaks.save', 'Save');
+    }
+
+    if (action === 'apply') {
+        return translateTextOrFallback('tweaks.apply', 'Apply');
+    }
+
+    return translateTextOrFallback('tweaks.saveApply', 'Save & Apply');
+}
+
+async function maybeRecommendThermalControlOffsets(recommendation, action) {
+    if (!recommendation) return;
+    if (typeof window.isThermalControlRecommendationAvailable !== 'function') return;
+    if (typeof window.applyThermalControlRecommendation !== 'function') return;
+
+    const available = await window.isThermalControlRecommendationAvailable();
+    if (!available) return;
+
+    const enabling = recommendation === 'enable';
+    const confirmed = await showConfirmModal({
+        title: enabling
+            ? translateTextOrFallback('modal.throttlersProtectionOffsetsEnableTitle', 'Set recommended thermal offsets?')
+            : translateTextOrFallback('modal.throttlersProtectionOffsetsDisableTitle', 'Reset thermal offsets to 0°C?'),
+        body: enabling
+            ? translateTextOrFallback(
+                'modal.throttlersProtectionOffsetsEnableBody',
+                '<p>Throttling Protection was enabled. Recommended offsets help avoid overheating because the ROM can no longer throttle the SoC.</p><p>This will set Big and Prime to <strong>-10°C</strong>, Little to <strong>-8°C</strong>, and G3D to <strong>-13°C</strong>.</p>'
+            )
+            : translateTextOrFallback(
+                'modal.throttlersProtectionOffsetsDisableBody',
+                '<p>Throttling Protection was disabled. Resetting all thermal offsets to <strong>0°C</strong> is recommended because the ROM will manage throttling again.</p>'
+            ),
+        iconClass: enabling ? 'warning' : 'info',
+        confirmText: getRecommendationConfirmText(action),
+        cancelText: translateTextOrFallback('modal.cancel', 'Cancel')
+    });
+
+    if (!confirmed) return;
+    await window.applyThermalControlRecommendation({ direction: recommendation, action });
+}
+
 function getSupportedExynosKeys() {
     const keys = [];
     if (miscCapabilities.esg_short_burst === '1' && window.KERNEL_NAME === 'Floppy2100') {
@@ -285,11 +357,7 @@ window.loadExynosState = loadExynosState;
 
 async function saveStateSubset(keys) {
     for (const key of keys) {
-        if (key === 'gpu_unlock' || key === 'throttlers_protection') {
-            const switchId = key === 'gpu_unlock' ? 'misc-gpuunlock-switch' : 'misc-throttlersprotection-switch';
-            const toggleSwitch = document.getElementById(switchId);
-            if (toggleSwitch && toggleSwitch.disabled) continue;
-        }
+        if (isMiscToggleDisabled(key)) continue;
         await runMiscBackend('save', key, miscPendingState[key]);
         miscSavedState[key] = miscPendingState[key];
         miscReferenceState[key] = miscPendingState[key];
@@ -297,22 +365,19 @@ async function saveStateSubset(keys) {
 
     renderExynosCards();
     showToast(window.t ? window.t('toast.settingsSaved') : 'Saved');
+    return true;
 }
 
 async function applyStateSubset(keys) {
     for (const key of keys) {
-        if (key === 'gpu_unlock' || key === 'throttlers_protection') {
-            const switchId = key === 'gpu_unlock' ? 'misc-gpuunlock-switch' : 'misc-throttlersprotection-switch';
-            const toggleSwitch = document.getElementById(switchId);
-            if (toggleSwitch && toggleSwitch.disabled) continue;
-        }
+        if (isMiscToggleDisabled(key)) continue;
         await runMiscBackend('apply', key, miscPendingState[key]);
     }
 
     const currentOutput = await runMiscBackend('get_current');
     if (!currentOutput) {
         showToast(window.t ? window.t('toast.settingsFailed') : 'Failed to apply settings', true);
-        return;
+        return false;
     }
 
     const current = parseKeyValue(currentOutput);
@@ -326,6 +391,7 @@ async function applyStateSubset(keys) {
 
     renderExynosCards();
     showToast(window.t ? window.t('toast.settingsApplied') : 'Applied');
+    return true;
 }
 
 async function saveMisc() {
@@ -336,12 +402,41 @@ async function applyMisc() {
     await applyStateSubset(getCardSupportedKeys('misc'));
 }
 
-async function saveExynos() {
-    await saveStateSubset(getCardSupportedKeys('exynos'));
+async function saveExynos(options = {}) {
+    const { promptRecommendation = false } = options;
+    const recommendation = promptRecommendation ? getThrottlersProtectionRecommendation('save') : null;
+    const saved = await saveStateSubset(getCardSupportedKeys('exynos'));
+    if (promptRecommendation && saved) {
+        await maybeRecommendThermalControlOffsets(recommendation, 'save');
+    }
+    return saved;
 }
 
-async function applyExynos() {
-    await applyStateSubset(getCardSupportedKeys('exynos'));
+async function applyExynos(options = {}) {
+    const { promptRecommendation = false } = options;
+    const recommendation = promptRecommendation ? getThrottlersProtectionRecommendation('apply') : null;
+    const applied = await applyStateSubset(getCardSupportedKeys('exynos'));
+    if (promptRecommendation && applied) {
+        await maybeRecommendThermalControlOffsets(recommendation, 'apply');
+    }
+    return applied;
+}
+
+async function saveApplyExynos(options = {}) {
+    const { promptRecommendation = false } = options;
+    const recommendation = promptRecommendation ? getThrottlersProtectionRecommendation('save_apply') : null;
+    const keys = getCardSupportedKeys('exynos');
+    const saved = await saveStateSubset(keys);
+    const applied = await applyStateSubset(keys);
+    if (promptRecommendation && saved && applied) {
+        await maybeRecommendThermalControlOffsets(recommendation, 'save_apply');
+    }
+    return saved && applied;
+}
+
+function bindButtonIfPresent(buttonId, handler) {
+    const button = document.getElementById(buttonId);
+    if (button) button.addEventListener('click', handler);
 }
 
 async function clearGpuUnlockPersistence() {
@@ -408,7 +503,9 @@ function bindExynosUiIfNeeded() {
     }
 
     window.bindSaveApplyButtons('misc', saveMisc, applyMisc);
-    window.bindSaveApplyButtons('exynos', saveExynos, applyExynos);
+    bindButtonIfPresent('exynos-btn-save', () => saveExynos({ promptRecommendation: true }));
+    bindButtonIfPresent('exynos-btn-apply', () => applyExynos({ promptRecommendation: true }));
+    bindButtonIfPresent('exynos-btn-save-apply', () => saveApplyExynos({ promptRecommendation: true }));
 
     document.addEventListener('languageChanged', () => {
         renderExynosCards();

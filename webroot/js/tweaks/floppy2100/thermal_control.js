@@ -3,6 +3,20 @@
 const THERMAL_CONTROL_MIN_C = -50;
 const THERMAL_CONTROL_MAX_C = 15;
 const THERMAL_CONTROL_KEYS = ['little', 'big', 'prime', 'g3d'];
+const THERMAL_CONTROL_SAFE_OFFSETS = Object.freeze({
+    performance_mode: '0',
+    little: '-8',
+    big: '-10',
+    prime: '-10',
+    g3d: '-13'
+});
+const THERMAL_CONTROL_ROM_MANAGED_OFFSETS = Object.freeze({
+    performance_mode: '0',
+    little: '0',
+    big: '0',
+    prime: '0',
+    g3d: '0'
+});
 
 let thermalControlAvailable = false;
 let thermalControlCurrentRawState = {
@@ -112,6 +126,10 @@ function getThermalControlManualState(state = thermalControlPendingState) {
 
 function isThermalControlPerformanceActive(state = thermalControlPendingState) {
     return String(state.performance_mode) === '1';
+}
+
+function resolveThermalControlActionState(stateOverride = null) {
+    return stateOverride ? normalizeThermalControlUiState(stateOverride) : getNormalizedThermalControlPendingState();
 }
 
 function getNormalizedThermalControlPendingState() {
@@ -337,8 +355,9 @@ async function loadThermalControlState() {
 }
 window.loadThermalControlState = loadThermalControlState;
 
-async function saveThermalControl() {
-    const normalizedPendingState = getNormalizedThermalControlPendingState();
+async function saveThermalControl(options = {}) {
+    const { stateOverride = null, silent = false } = options;
+    const normalizedPendingState = resolveThermalControlActionState(stateOverride);
     const effectiveState = isThermalControlPerformanceActive(normalizedPendingState)
         ? { performance_mode: '1' }
         : {
@@ -364,11 +383,16 @@ async function saveThermalControl() {
     }
 
     renderThermalControlCard();
-    showToast(window.t ? window.t('toast.settingsSaved') : 'Settings saved');
+    if (!silent) {
+        showToast(window.t ? window.t('toast.settingsSaved') : 'Settings saved');
+    }
+
+    return true;
 }
 
-async function applyThermalControl() {
-    const normalizedPendingState = getNormalizedThermalControlPendingState();
+async function applyThermalControl(options = {}) {
+    const { stateOverride = null, silent = false } = options;
+    const normalizedPendingState = resolveThermalControlActionState(stateOverride);
     const performanceModeActive = isThermalControlPerformanceActive(normalizedPendingState);
     await runThermalControlBackend(
         'apply',
@@ -379,12 +403,61 @@ async function applyThermalControl() {
     );
 
     const currentOutput = await runThermalControlBackend('get_current');
+    if (!currentOutput) {
+        showToast(window.t ? window.t('toast.settingsFailed') : 'Failed to apply settings', true);
+        return false;
+    }
+
     thermalControlCurrentRawState = normalizeThermalControlRawState(parseKeyValue(currentOutput));
     thermalControlCurrentState = normalizeThermalControlUiState(rawThermalControlToUiState(thermalControlCurrentRawState));
 
     renderThermalControlCard();
-    showToast(window.t ? window.t('toast.settingsApplied') : 'Settings applied');
+    if (!silent) {
+        showToast(window.t ? window.t('toast.settingsApplied') : 'Settings applied');
+    }
+
+    return true;
 }
+
+window.isThermalControlRecommendationAvailable = async function () {
+    return checkThermalControlAvailable();
+};
+
+window.applyThermalControlRecommendation = async function ({ direction, action } = {}) {
+    const available = await checkThermalControlAvailable();
+    if (!available) return false;
+
+    let recommendedState = null;
+    if (direction === 'enable') {
+        recommendedState = THERMAL_CONTROL_SAFE_OFFSETS;
+    } else if (direction === 'disable') {
+        recommendedState = THERMAL_CONTROL_ROM_MANAGED_OFFSETS;
+    }
+
+    if (!recommendedState) return false;
+
+    thermalControlPendingState = normalizeThermalControlUiState({
+        ...thermalControlPendingState,
+        ...recommendedState,
+        performance_mode: '0'
+    });
+    thermalControlLastManualState = getThermalControlManualState(thermalControlPendingState);
+
+    if (action === 'save') {
+        return saveThermalControl({ stateOverride: thermalControlPendingState, silent: true });
+    }
+
+    if (action === 'apply') {
+        return applyThermalControl({ stateOverride: thermalControlPendingState, silent: true });
+    }
+
+    if (action === 'save_apply') {
+        await saveThermalControl({ stateOverride: thermalControlPendingState, silent: true });
+        return applyThermalControl({ stateOverride: thermalControlPendingState, silent: true });
+    }
+
+    return false;
+};
 
 function bindThermalControlInput(key) {
     const slider = document.getElementById(`thermal-control-slider-${key}`);
