@@ -2,7 +2,7 @@
 
 <p align="center"><img src="docs/images/floppycompanion.png" alt="FloppyCompanion" width="720" /></p>
 
-FloppyCompanion is a KernelSU WebUI module for configuring FloppyKernel variants. It exposes kernel feature toggles, device-specific tweaks, and a presets system through a modern Material Design interface.
+FloppyCompanion is a KernelSU WebUI module for configuring FloppyKernel variants. It exposes kernel feature toggles, device-specific tweaks, and a presets system through a BeerCSS-backed Material Design interface.
 
 ## Requirements
 - Root solution:
@@ -16,7 +16,7 @@ FloppyCompanion is a KernelSU WebUI module for configuring FloppyKernel variants
 
         - Floppy1280: v6.2+ supported
 
-        - Floppy2100: supported
+        - Floppy2100: v1.0+ supported
         
         - FloppyTrinketMi: v2.0b+ required
 
@@ -33,7 +33,7 @@ Note: If you spoof the kernel version (SusFS, BRENE), feature detection and patc
 - Common kernel tweaks (ZRAM, VM, I/O scheduler)
 - Platform-specific tweak panels (thermal, undervolt, charging, display, GPU)
 - Preset save/load/apply system
-- Material Design 3 WebUI with i18n support
+- BeerCSS-powered Material Design 3 WebUI with i18n support
 
 ## Usage
 1. Install the module through KernelSU Manager.
@@ -81,6 +81,7 @@ The module zip will be emitted by the build script in the repo directory.
 FloppyCompanion currently supports:
 - English
 - Spanish
+- Portuguese (Brazil)
 - Turkish
 - Ukrainian
 - Vietnamese
@@ -94,6 +95,7 @@ Translation guide: docs/TRANSLATION_GUIDE.md
 Contributions and translations are welcome. See docs/TRANSLATION_GUIDE.md and docs/TRANSLATORS.md.
 
 ## Credits
+- BeerCSS: https://www.beercss.com/
 - FloppyKernel community testers
 - Hybrid Mount UI inspiration: https://github.com/Hybrid-Mount/meta-hybrid_mount
 - All translators and contributors
